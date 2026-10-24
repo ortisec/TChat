@@ -26,6 +26,14 @@ dev:
 api:
     uv --directory services/api run uvicorn tchat_api.main:app --reload --port 8000
 
+# Arranca el cliente de terminal (requiere `just cli-login` antes)
+cli:
+    cargo run --manifest-path apps/cli/Cargo.toml -p tchat-cli --
+
+# Autoriza este terminal contra la API local
+cli-login:
+    cargo run --manifest-path apps/cli/Cargo.toml -p tchat-cli -- login
+
 # Aplica las migraciones pendientes
 migrate:
     uv --directory services/api run alembic upgrade head
@@ -43,6 +51,12 @@ gen-client:
     uv --directory services/api run python -m tchat_api.export_openapi
     pnpm --filter @tchat/api-client gen
 
+# Comprueba formato, clippy y tests del cliente Rust
+check-cli:
+    cargo fmt --manifest-path apps/cli/Cargo.toml --all --check
+    cargo clippy --manifest-path apps/cli/Cargo.toml --workspace --all-targets -- -D warnings
+    cargo test --manifest-path apps/cli/Cargo.toml --workspace
+
 # Verifica formato, lint y tipos de todo el monorepo
 check:
     uv --directory services/api run ruff format --check .
@@ -51,6 +65,9 @@ check:
     pnpm lint
     pnpm format:check
     pnpm -r --if-present typecheck
+    cargo fmt --manifest-path apps/cli/Cargo.toml --all --check
+    cargo clippy --manifest-path apps/cli/Cargo.toml --workspace --all-targets -- -D warnings
+    cargo test --manifest-path apps/cli/Cargo.toml --workspace
 
 # Compila todas las apps web
 build:

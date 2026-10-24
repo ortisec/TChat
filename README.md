@@ -2,7 +2,7 @@
 
 Chat de terminal. Autenticación web, identidad propia y mensajería en tiempo real desde la terminal.
 
-> **Estado: Paso 4 de 7 — API funcional.**
+> **Estado: Paso 5 de 7 — cliente de terminal.**
 > Hoja de ruta completa en [docs/roadmap.md](docs/roadmap.md).
 
 ## La arquitectura en una frase
@@ -71,6 +71,8 @@ just up           # PostgreSQL local en :5432
 just migrate      # aplica migraciones
 just api          # API en http://localhost:8000/docs
 just dev          # las tres apps web en :4321, :4322 y :4323
+just cli-login    # autoriza el cliente de terminal
+just cli          # abre la TUI de TChat
 just test         # tests de la API
 just gen-client   # exporta OpenAPI y regenera el cliente TS
 just check        # formato, lint y tipos de todo el monorepo

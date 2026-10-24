@@ -1,0 +1,19 @@
+[package]
+name = "tchat-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Cliente de terminal de TChat"
+
+[[bin]]
+name = "tchat"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.104"
+clap = { version = "4.6.7", features = ["derive", "env"] }
+tchat-core = { version = "0.1.0", path = "../tchat-core" }
+tchat-tui = { version = "0.1.0", path = "../tchat-tui" }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+webbrowser = "1.2.5"

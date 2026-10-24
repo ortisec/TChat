@@ -4,7 +4,7 @@ Siete pasos. Cada paso deja el repositorio en un estado coherente, con CI en ver
 demostrable. Al final de cada bloque se indica **tu parte**: lo que solo puedes hacer tú
 (paneles, secretos, cuentas).
 
-Estado actual: **Paso 4 de 7 completado**.
+Estado actual: **Paso 5 de 7 completado**.
 
 ---
 
@@ -106,23 +106,27 @@ más la capa WebSocket cubierta con tests de conexión y protocolo.
 
 ---
 
-## Paso 5 — Cliente Rust
+## Paso 5 — Cliente Rust ✅
 
 **Entregables**
 
 - `tchat-core`: cliente HTTP, WebSocket, refresco de tokens, protocolo Serde.
 - `tchat-tui`: Ratatui con login, lista de conversaciones, mensajes y caja de escritura.
-- `tchat-cli`: `tchat login`, `tchat logout`, `tchat` (TUI), `tchat --version`.
+- `tchat-cli`: `tchat login`, `tchat logout`, `tchat open <usuario>`, `tchat` (TUI) y
+  `tchat --version`.
 - Almacenamiento del refresh token en el keyring del SO.
 - Tests unitarios del protocolo y del parseo de configuración.
 
 **Tu parte**
 
-1. Probar el binario en Windows y contarme los fallos de la TUI (altura, acentos, teclas).
-2. Si tienes una Mac o Linux a mano, validar ahí también.
+1. Prueba la TUI en Windows (`just cli-login` y luego `just cli`) y cuéntame los fallos visuales:
+   altura de paneles, acentos, teclas, comportamiento del scroll.
+2. Si tienes una Mac o Linux a mano, valida ahí también (en Linux el llavero usa keyutils).
+3. Necesitas la API levantada (`just api`) y una conversación creada para ver mensajes.
 
-**Criterio de hecho:** `cargo run -p tchat-cli` autentica por navegador y permite chatear
-contra la API local.
+**Criterio de hecho:** `tchat login` autentica por navegador y permite chatear contra la API local.
+Verificado el flujo completo en Windows (device flow, keyring, `status`, `logout`) y la TUI con
+tests de estado y protocolo; falta la validación visual interactiva.
 
 ---
 

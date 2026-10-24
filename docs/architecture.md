@@ -146,6 +146,17 @@ keyring del sistema operativo.
 - El registro de conexiones vive en memoria: para escalar a varias instancias hay que moverlo a
   Redis con pub/sub.
 
+## Cliente de terminal
+
+- Workspace Rust 2024 con tres crates: `tchat-core` (red y protocolo), `tchat-tui` (estado y
+  dibujo) y `tchat-cli` (binario y comandos).
+- Comandos: `tchat login`, `logout`, `status`, `open <usuario>` y la TUI por defecto.
+- El access token dura 15 minutos y se renueva con el refresh token antes de cada reconexión.
+- El refresh token vive en el llavero nativo (Credential Manager, Keychain o keyutils).
+- La TUI mantiene un WebSocket con reconexión y backoff; los mensajes del usuario se envían por
+  WebSocket y el historial se carga por REST.
+- Compatible con Windows, Linux y macOS; el empaquetado con `cargo-dist` llega en el Paso 7.
+
 ## Superficie HTTP
 
 | Grupo          | Rutas                                                                                                                          |
