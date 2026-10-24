@@ -18,5 +18,21 @@ services:
       timeout: 5s
       retries: 10
 
+  # Opcional: pila completa en contenedores (`docker compose --profile full up`).
+  api:
+    profiles: ["full"]
+    build:
+      context: ../../services/api
+    environment:
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+asyncpg://tchat:tchat@postgres:5432/tchat
+      CORS_ORIGINS: http://localhost:4321,http://localhost:4322,http://localhost:4323
+      FIREBASE_PROJECT_ID: tchat-c20ce
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   tchat_pgdata:

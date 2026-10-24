@@ -51,6 +51,10 @@ gen-client:
     uv --directory services/api run python -m tchat_api.export_openapi
     pnpm --filter @tchat/api-client gen
 
+# Construye la imagen de la API en local
+image:
+    docker build -t tchat-api:local services/api
+
 # Comprueba formato, clippy y tests del cliente Rust
 check-cli:
     cargo fmt --manifest-path apps/cli/Cargo.toml --all --check

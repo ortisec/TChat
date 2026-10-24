@@ -76,3 +76,16 @@ just gen-client
 ```
 
 Exporta `packages/contracts/openapi.json` y regenera `packages/api-client`.
+
+## Imagen Docker
+
+```powershell
+just image   # docker build -t tchat-api:local services/api
+
+# pila completa en local:
+docker compose -f infra/compose/docker-compose.yml --profile full up -d --build
+```
+
+La imagen es multi-stage: `uv` construye el entorno y la etapa final corre como usuario sin
+privilegios con un healthcheck contra `/health`. Las migraciones se ejecutan con
+`alembic upgrade head` en el contenedor `migrate` antes de desplegar.

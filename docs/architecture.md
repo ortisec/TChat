@@ -106,6 +106,22 @@ dos veces: Pydantic (backend) y Serde (Rust). Los nombres de eventos son el cont
 Los binarios **no** se alojan en Vercel: viven en GitHub Releases y la página de descargas
 enlaza a los assets y sirve los scripts de instalación.
 
+### Backend en el VPS
+
+```
+Internet ──80/443──► Caddy ──► api:8000 ──► postgres:5432
+                     (TLS)     (FastAPI)     (volumen)
+```
+
+- Las imágenes se construyen en GitHub Actions y se publican en GHCR con el SHA del commit.
+- `deploy-api.yml` sincroniza `infra/`, hace `pull`, aplica migraciones con un contenedor
+  efímero (`migrate`), levanta los servicios y recarga Caddy.
+- PostgreSQL no publica puertos; solo es accesible desde la red de Docker.
+- El `.env` de producción vive únicamente en `/opt/tchat/infra/compose/.env`.
+- Los backups son `pg_dump` custom comprimidos, con retención de 14 días por defecto.
+
+Runbooks: `docs/runbooks/deploy.md` y `docs/runbooks/backup-restore.md`.
+
 ## Autenticación
 
 ### Web
@@ -195,11 +211,12 @@ token y el device code nunca se guardan en claro, solo su SHA-256.
 
 ## Variables de entorno
 
-| Ámbito                 | Variables                                                                                                                                                                        |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Web (públicas, Vercel) | `PUBLIC_FIREBASE_API_KEY`, `PUBLIC_FIREBASE_AUTH_DOMAIN`, `PUBLIC_FIREBASE_PROJECT_ID`, `PUBLIC_FIREBASE_APP_ID`, `PUBLIC_FIREBASE_SENDER_ID`, `PUBLIC_API_URL`, `PUBLIC_WS_URL` |
-| Enlaces entre apps     | `PUBLIC_SITE_URL`, `PUBLIC_ACCOUNT_URL`, `PUBLIC_DOWNLOAD_URL`, `PUBLIC_RELEASES_URL`                                                                                            |
-| API (privadas, VPS)    | `DATABASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `CORS_ORIGINS`, `TOKEN_TTL_SECONDS`                                                                      |
-| CLI                    | ninguno obligatorio; la configuración vive en el keyring y en el directorio de configuración del usuario                                                                         |
+| Ámbito                 | Variables                                                                                                                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web (públicas, Vercel) | `PUBLIC_FIREBASE_API_KEY`, `PUBLIC_FIREBASE_AUTH_DOMAIN`, `PUBLIC_FIREBASE_PROJECT_ID`, `PUBLIC_FIREBASE_APP_ID`, `PUBLIC_FIREBASE_SENDER_ID`, `PUBLIC_API_URL`                                                                       |
+| Enlaces entre apps     | `PUBLIC_SITE_URL`, `PUBLIC_ACCOUNT_URL`, `PUBLIC_DOWNLOAD_URL`, `PUBLIC_RELEASES_URL`                                                                                                                                                 |
+| API (privadas, VPS)    | `DATABASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `CORS_ORIGINS`, `AUTH_JWT_SECRET`, `ACCESS_TOKEN_TTL_SECONDS`, `DEVICE_CODE_TTL_SECONDS`, `DEVICE_POLL_INTERVAL_SECONDS`, `PUBLIC_ACCOUNT_URL`, `ENVIRONMENT` |
+| Infra (VPS)            | `TAG`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `ACME_EMAIL`                                                                                                                                                              |
+| CLI                    | ninguno obligatorio; `TCHAT_API_URL`, `TCHAT_WS_URL` y `TCHAT_ACCOUNT_URL` permiten apuntar a otro entorno. El refresh token vive en el keyring                                                                                       |
 
 Ningún secreto se versiona. Cada superficie incluye su propio `.env.example`.

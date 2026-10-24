@@ -4,7 +4,7 @@ Siete pasos. Cada paso deja el repositorio en un estado coherente, con CI en ver
 demostrable. Al final de cada bloque se indica **tu parte**: lo que solo puedes hacer tú
 (paneles, secretos, cuentas).
 
-Estado actual: **Paso 5 de 7 completado**.
+Estado actual: **Paso 6 de 7 completado**.
 
 ---
 
@@ -130,7 +130,7 @@ tests de estado y protocolo; falta la validación visual interactiva.
 
 ---
 
-## Paso 6 — Infraestructura y despliegue
+## Paso 6 — Infraestructura y despliegue ✅
 
 **Entregables**
 
@@ -142,13 +142,18 @@ tests de estado y protocolo; falta la validación visual interactiva.
 
 **Tu parte**
 
-1. Contratar el VPS y darme IP y usuario SSH.
-2. Apuntar los DNS `api.tchat.site` y `ws.tchat.site` al VPS.
-3. Crear el Environment `production` en GitHub con `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
-4. Copiar la service account de Firebase al VPS como `FIREBASE_SERVICE_ACCOUNT_JSON`.
-5. Abrir solo 80/443 en el firewall.
+1. Contratar el VPS (Ubuntu 24.04 con Docker) y darme IP y usuario SSH.
+2. Apuntar los DNS `api.tchat.site` y `ws.tchat.site` al VPS y abrir solo 22/80/443.
+3. Crear el Environment `production` en GitHub con `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` y,
+   si no usas el puerto 22, `VPS_PORT`.
+4. Copiar `infra/compose/.env.example` a `/opt/tchat/infra/compose/.env` en el VPS y rellenar
+   `POSTGRES_PASSWORD`, `AUTH_JWT_SECRET` y `ACME_EMAIL`.
+5. Opcional: la service account de Firebase solo hace falta si añadimos operaciones
+   administrativas; la verificación de tokens no la necesita.
 
 **Criterio de hecho:** `https://api.tchat.site/health` responde y el CLI funciona contra producción.
+Verificado en local: imagen Docker, pila completa contra PostgreSQL, `alembic check` dentro del
+contenedor, compose de producción y Caddyfile validados. Falta ejecutarlo en tu VPS.
 
 ---
 
