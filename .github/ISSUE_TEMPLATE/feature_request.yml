@@ -1,0 +1,32 @@
+name: Propuesta
+description: Idea o mejora para TChat
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema
+      description: Qué necesidad o fricción existe hoy
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Cómo lo resolverías
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Superficie afectada
+      options:
+        - Web
+        - API
+        - Cliente de terminal
+        - Infraestructura
+        - Documentación

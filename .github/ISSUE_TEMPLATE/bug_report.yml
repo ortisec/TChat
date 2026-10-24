@@ -1,0 +1,52 @@
+name: Reporte de bug
+description: Algo no funciona como debería
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar. Cuanta más precisión, más rápido se corrige.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Superficie
+      options:
+        - Web (tchat.site)
+        - Cuenta (app.tchat.site)
+        - Descargas (cli.tchat.site)
+        - Cliente de terminal
+        - API
+        - Otro
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versión
+      description: Salida de `tchat --version` o commit desplegado
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      placeholder: |
+        1. Ejecuto `tchat login`
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamiento esperado
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamiento actual
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Entorno
+      description: SO, versión de terminal, versión de Node/Rust si aplica

@@ -1,0 +1,159 @@
+# Roadmap de construcción
+
+Siete pasos. Cada paso deja el repositorio en un estado coherente, con CI en verde y algo
+demostrable. Al final de cada bloque se indica **tu parte**: lo que solo puedes hacer tú
+(paneles, secretos, cuentas).
+
+Estado actual: **Paso 2 de 7 completado**.
+
+---
+
+## Paso 1 — Bootstrap del monorepo ✅
+
+**Entregables**
+
+- Raíz delgada: `package.json`, `pnpm-workspace.yaml`, `justfile`.
+- Higiene de git: `.gitignore`, `.gitattributes` (LF en repo, CRLF en `.ps1`), `.editorconfig`.
+- Estructura completa de carpetas con un `README.md` por superficie.
+- `docs/architecture.md`, este roadmap y los primeros ADR.
+- CI base con detección de cambios: los jobs de cada stack se activan solos cuando aparece su código.
+
+**Tu parte**
+
+1. Abre una terminal nueva para que `just` entre en el `PATH` y comprueba `just --list`.
+2. Guarda el diagrama en `docs/assets/arquitectura.png`.
+3. En GitHub (`ortisec/TChat`): descripción, topics (`chat`, `terminal`, `rust`, `fastapi`, `astro`), desactivar Wiki/Projects si no los usas.
+4. Proteger `main`: exigir PR y el check `CI` antes de fusionar.
+5. Decidir licencia (si es MIT, añadir `LICENSE`; si no, dejar `UNLICENSED`).
+6. Confirmar el primer commit y push.
+
+**Criterio de hecho:** `just check` pasa, `git status` limpio tras el commit, CI en verde
+(solo corre el job de detección porque aún no hay código de ningún stack).
+
+---
+
+## Paso 2 — Backend base y contrato ✅
+
+**Entregables**
+
+- `services/api` con uv, FastAPI, Pydantic Settings y estructura por capas.
+- Modelos SQLAlchemy y primera migración Alembic (`users`).
+- Endpoint `GET /health` y `GET /api/v1/meta`.
+- Exportador de OpenAPI → `packages/contracts/openapi.json`.
+- `packages/api-client` generado con `openapi-typescript` + `openapi-fetch`.
+- CI: ruff, mypy, pytest con PostgreSQL de servicio, y job `contract` que detecta desfases.
+
+**Tu parte**
+
+1. ✅ Proyecto de Firebase creado: `tchat-c20ce`.
+2. ✅ `FIREBASE_PROJECT_ID` recibido y configurado como valor por defecto.
+3. Pendiente para el Paso 6: descargar la service account (Project settings → Service accounts
+   → Generate key) y copiarla al VPS. **No la subas al repo.**
+
+**Criterio de hecho:** `uv run pytest` en verde, `just api` levanta en `:8000/docs`, y
+`just gen-client` deja el cliente TS compilando.
+
+---
+
+## Paso 3 — Las tres apps web
+
+**Entregables**
+
+- `apps/www`, `apps/account`, `apps/download` como proyectos Astro independientes.
+- Tailwind CSS con una única escala de grises (sin colores de acento), tokens en `packages/ui`.
+- `packages/config` con tsconfig, eslint y prettier compartidos.
+- `apps/account`: registro, login, logout, perfil y página `cli-auth` para el device flow.
+- `apps/download`: detección de SO, enlaces a releases y scripts de instalación.
+- `apps/www`: landing que explica el producto.
+
+**Tu parte**
+
+1. Crear tres proyectos en Vercel apuntando al mismo repo, cada uno con su *Root Directory*
+   (`apps/www`, `apps/account`, `apps/download`).
+2. Asignar dominios: `tchat.site`, `app.tchat.site`, `cli.tchat.site`.
+3. Añadir esos dominios en Firebase → Authentication → Settings → Authorized domains.
+4. Pegar las variables `PUBLIC_*` en cada proyecto de Vercel.
+
+**Criterio de hecho:** las tres URLs cargan en grises, el registro crea usuario en Firebase y
+`/cli-auth` responde con el código del dispositivo.
+
+---
+
+## Paso 4 — API funcional
+
+**Entregables**
+
+- Verificación de ID tokens con Firebase Admin.
+- `/auth/sync`, `/auth/device/*`, `/auth/token`, `/auth/logout`.
+- Usuarios, amistades (solicitar/aceptar/rechazar), conversaciones y mensajes.
+- WebSocket con autenticación, entrega de mensajes, acuse y presencia.
+- Migraciones para todas las tablas y tests de los flujos críticos.
+
+**Tu parte**
+
+1. Nada imprescindible: aquí trabajo solo con el emulador o Postgres local.
+2. Opcional: darme reglas de negocio que quieras fijar (límite de caracteres, grupos o solo 1:1).
+
+**Criterio de hecho:** dos clientes de prueba intercambian mensajes por WebSocket y las
+amistades se gestionan por REST.
+
+---
+
+## Paso 5 — Cliente Rust
+
+**Entregables**
+
+- `tchat-core`: cliente HTTP, WebSocket, refresco de tokens, protocolo Serde.
+- `tchat-tui`: Ratatui con login, lista de conversaciones, mensajes y caja de escritura.
+- `tchat-cli`: `tchat login`, `tchat logout`, `tchat` (TUI), `tchat --version`.
+- Almacenamiento del refresh token en el keyring del SO.
+- Tests unitarios del protocolo y del parseo de configuración.
+
+**Tu parte**
+
+1. Probar el binario en Windows y contarme los fallos de la TUI (altura, acentos, teclas).
+2. Si tienes una Mac o Linux a mano, validar ahí también.
+
+**Criterio de hecho:** `cargo run -p tchat-cli` autentica por navegador y permite chatear
+contra la API local.
+
+---
+
+## Paso 6 — Infraestructura y despliegue
+
+**Entregables**
+
+- `infra/compose/docker-compose.yml` (dev) y `.prod.yml` (VPS).
+- `Caddyfile` con TLS automático para `api.` y `ws.`.
+- `Dockerfile` multi-stage para la API.
+- Workflow `deploy-api.yml`: GHCR → SSH → migraciones → `up -d`.
+- Backups de PostgreSQL y runbook de restauración.
+
+**Tu parte**
+
+1. Contratar el VPS y darme IP y usuario SSH.
+2. Apuntar los DNS `api.tchat.site` y `ws.tchat.site` al VPS.
+3. Crear el Environment `production` en GitHub con `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
+4. Copiar la service account de Firebase al VPS como `FIREBASE_SERVICE_ACCOUNT_JSON`.
+5. Abrir solo 80/443 en el firewall.
+
+**Criterio de hecho:** `https://api.tchat.site/health` responde y el CLI funciona contra producción.
+
+---
+
+## Paso 7 — Release del CLI y CI/CD completo
+
+**Entregables**
+
+- `cargo-dist` configurado: `.msi`, `.tar.gz`, checksums e instaladores.
+- Workflow de release por tag `cli-v*` para Windows, Linux (glibc y musl) y macOS (x86_64 y arm64).
+- `latest.json` y scripts `install.sh` / `install.ps1` servidos desde `cli.tchat.site`.
+- CI/CD completo documentado y `docs/runbooks/`.
+
+**Tu parte**
+
+1. Probar la instalación en una máquina limpia de Windows (`install.ps1`).
+2. Revisar que los binarios de macOS/Linux arrancan (o pasármelo para probar en CI).
+3. Definir la versión inicial (`v0.1.0`).
+
+**Criterio de hecho:** un usuario nuevo instala con un comando, ejecuta `tchat login` y chatea.

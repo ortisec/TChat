@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Detecta qué stack cambió y activa solo los jobs necesarios.
+  # Mientras un stack no exista en el repo, su job queda inactivo.
+  changes:
+    name: Detectar cambios
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+      cli: ${{ steps.filter.outputs.cli }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Filtrar rutas
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            web:
+              - 'apps/www/**'
+              - 'apps/account/**'
+              - 'apps/download/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+            api:
+              - 'services/api/**'
+              - 'packages/contracts/**'
+            cli:
+              - 'apps/cli/**'
+              - 'packages/contracts/ws-events.md'
+
+  web:
+    name: Web · lint y build
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm -r --if-present lint
+      - name: Typecheck
+        run: pnpm -r --if-present typecheck
+      - name: Build
+        run: pnpm -r --if-present build
+
+  api:
+    name: API · lint, tipos y tests
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: tchat
+          POSTGRES_PASSWORD: tchat
+          POSTGRES_DB: tchat_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tchat"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://tchat:tchat@localhost:5432/tchat_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: uv sync --frozen
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format
+        run: uv run ruff format --check .
+      - name: Mypy
+        run: uv run mypy src
+      - name: Migraciones
+        run: uv run alembic upgrade head
+      - name: Pytest
+        run: uv run pytest -q
+
+  contract:
+    name: Contrato · OpenAPI sincronizado
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.12"
+      - run: pnpm install --frozen-lockfile
+      - name: Instalar dependencias de la API
+        working-directory: services/api
+        run: uv sync --frozen
+      - name: Exportar OpenAPI
+        working-directory: services/api
+        run: uv run python -m tchat_api.export_openapi
+      - name: Regenerar cliente
+        run: pnpm --filter @tchat/api-client gen
+      - name: Comprobar que no hay desfase
+        run: git diff --exit-code -- packages/contracts packages/api-client
+
+  cli:
+    name: CLI · formato, clippy y tests
+    needs: changes
+    if: needs.changes.outputs.cli == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/cli -> target
+      - name: Formato
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Tests
+        run: cargo test --workspace

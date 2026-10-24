@@ -1,0 +1,22 @@
+name: tchat-dev
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: tchat-postgres
+    environment:
+      POSTGRES_USER: tchat
+      POSTGRES_PASSWORD: tchat
+      POSTGRES_DB: tchat
+    ports:
+      - "5432:5432"
+    volumes:
+      - tchat_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tchat -d tchat"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tchat_pgdata:

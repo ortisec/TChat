@@ -1,0 +1,45 @@
+# Node / JS
+node_modules/
+.pnpm-store/
+dist/
+.astro/
+.vercel/
+.turbo/
+*.tsbuildinfo
+coverage/
+
+# Rust
+target/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Entornos y secretos
+.env
+.env.*
+!.env.example
+
+# Datos locales
+*.db
+*.sqlite3
+pgdata/
+
+# Editores y sistema operativo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Varios
+*.log
