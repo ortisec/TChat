@@ -18,6 +18,7 @@ import {
 } from "firebase/auth";
 import { useState } from "react";
 
+import { useApiProfile, type SyncState, type UserPublic } from "../hooks/use-api-profile";
 import { useAuthUser } from "../hooks/use-auth-user";
 import { authErrorMessage } from "../lib/auth-errors";
 import { firebaseConfigured, getFirebaseAuth, missingFirebaseEnv } from "../lib/firebase";
@@ -56,9 +57,13 @@ function SetupNotice() {
 function ProfileView({
   ready,
   user,
+  profile,
+  syncState,
 }: {
   ready: boolean;
   user: ReturnType<typeof useAuthUser>["user"];
+  profile: UserPublic | null;
+  syncState: SyncState;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -97,6 +102,18 @@ function ProfileView({
           <dd className="text-neutral-200">{providerLabel(provider)}</dd>
         </div>
         <div className="flex items-center justify-between gap-4 py-3">
+          <dt className="text-neutral-500">Cuenta</dt>
+          <dd className="text-neutral-300">
+            {syncState === "ready" && profile ? (
+              <span className="font-mono">@{profile.username}</span>
+            ) : syncState === "error" ? (
+              <span className="text-neutral-500">sin conexión con la API</span>
+            ) : (
+              <span className="text-neutral-500">sincronizando…</span>
+            )}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-4 py-3">
           <dt className="text-neutral-500">UID</dt>
           <dd className="flex min-w-0 items-center gap-2">
             <span className="truncate font-mono text-xs text-neutral-300">{user.uid}</span>
@@ -125,8 +142,8 @@ function ProfileView({
       </div>
 
       <p className="mt-6 text-xs leading-relaxed text-neutral-600">
-        Tu perfil se sincronizará con la API de TChat en el siguiente paso. Por ahora vive solo en
-        Firebase.
+        La API de TChat guarda tu perfil, tus amistades y tus conversaciones. Si ves «sin conexión»,
+        arranca el backend con <span className="font-mono">just api</span>.
       </p>
     </Card>
   );
@@ -281,6 +298,7 @@ export function AuthForm() {
 
 export default function AuthPanel() {
   const { user, ready } = useAuthUser();
+  const { profile, state } = useApiProfile(user);
 
   if (!firebaseConfigured) {
     return (
@@ -292,7 +310,11 @@ export default function AuthPanel() {
 
   return (
     <div className="w-full max-w-md">
-      {ready && user ? <ProfileView ready={ready} user={user} /> : <AuthForm />}
+      {ready && user ? (
+        <ProfileView ready={ready} user={user} profile={profile} syncState={state} />
+      ) : (
+        <AuthForm />
+      )}
     </div>
   );
 }

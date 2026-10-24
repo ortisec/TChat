@@ -4,7 +4,7 @@ Siete pasos. Cada paso deja el repositorio en un estado coherente, con CI en ver
 demostrable. Al final de cada bloque se indica **tu parte**: lo que solo puedes hacer tú
 (paneles, secretos, cuentas).
 
-Estado actual: **Paso 3 de 7 completado**.
+Estado actual: **Paso 4 de 7 completado**.
 
 ---
 
@@ -83,7 +83,7 @@ pendiente de las claves web de Firebase (`apiKey` y `appId`).
 
 ---
 
-## Paso 4 — API funcional
+## Paso 4 — API funcional ✅
 
 **Entregables**
 
@@ -95,11 +95,14 @@ pendiente de las claves web de Firebase (`apiKey` y `appId`).
 
 **Tu parte**
 
-1. Nada imprescindible: aquí trabajo solo con el emulador o Postgres local.
-2. Opcional: darme reglas de negocio que quieras fijar (límite de caracteres, grupos o solo 1:1).
+1. ✅ No hace falta nada para probar: los tests crean su propia base `tchat_test`.
+2. Para usar la web contra la API en local: `just api` y haber pegado `apiKey`/`appId` de
+   Firebase en `apps/account/.env` (Paso 3).
+3. Opcional: fijar reglas de negocio (límite de caracteres, grupos o solo 1:1).
 
 **Criterio de hecho:** dos clientes de prueba intercambian mensajes por WebSocket y las
-amistades se gestionan por REST.
+amistades se gestionan por REST. Verificado con 29 tests de integración contra PostgreSQL,
+más la capa WebSocket cubierta con tests de conexión y protocolo.
 
 ---
 

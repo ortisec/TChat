@@ -110,6 +110,8 @@ jobs:
         run: uv run mypy src
       - name: Migraciones
         run: uv run alembic upgrade head
+      - name: Comprobar deriva de migraciones
+        run: uv run alembic check
       - name: Pytest
         run: uv run pytest -q
 

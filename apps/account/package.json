@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/react": "^7.1.1",
     "@tailwindcss/vite": "^4.3.3",
+    "@tchat/api-client": "workspace:*",
     "@tchat/ui": "workspace:*",
     "astro": "^7.4.2",
     "firebase": "^13.1.0",

@@ -2,7 +2,7 @@
 
 Chat de terminal. Autenticación web, identidad propia y mensajería en tiempo real desde la terminal.
 
-> **Estado: Paso 3 de 7 — tres apps web.**
+> **Estado: Paso 4 de 7 — API funcional.**
 > Hoja de ruta completa en [docs/roadmap.md](docs/roadmap.md).
 
 ## La arquitectura en una frase

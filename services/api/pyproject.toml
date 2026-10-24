@@ -8,7 +8,9 @@ dependencies = [
     "alembic>=1.14",
     "asyncpg>=0.30",
     "fastapi>=0.115",
+    "firebase-admin>=7.7.0",
     "pydantic-settings>=2.6",
+    "pyjwt>=2.15.1",
     "sqlalchemy[asyncio]>=2.0.36",
     "uvicorn[standard]>=0.32",
 ]
@@ -48,6 +50,10 @@ python_version = "3.12"
 strict = true
 mypy_path = "src"
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["firebase_admin", "firebase_admin.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

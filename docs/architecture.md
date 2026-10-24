@@ -118,44 +118,59 @@ enlaza a los assets y sirve los scripts de instalación.
 
 ### Terminal (device flow)
 
-```
-tchat login
-   │  POST /api/v1/auth/device/start
-   ▼
-code + verification_url
-   │  abre el navegador en app.tchat.site/cli-auth?code=…
-   ▼
-usuario inicia sesión con Firebase en la web
-   │  la web confirma el código: POST /api/v1/auth/device/approve
-   ▼
-CLI hace polling GET /api/v1/auth/device/{code}
-   │  recibe refresh token propio (opaco, revocable)
-   ▼
-lo guarda en el keyring del sistema operativo
-```
+1. `POST /api/v1/auth/device/start` devuelve `user_code`, `device_code`, `verification_url`,
+   `expires_in` e `interval`.
+   - `user_code`: 8 caracteres que el usuario ve en la web y en el terminal.
+   - `device_code`: secreto que solo conserva el CLI; el servidor guarda su hash SHA-256.
+2. `tchat login` abre `verification_url` (`app.tchat.site/cli-auth?code=USER_CODE`).
+3. El usuario inicia sesión y pulsa «Autorizar terminal»: `POST /api/v1/auth/device/approve`
+   con su ID token de Firebase y el `user_code`.
+4. El CLI hace polling a `POST /api/v1/auth/device/token` con el `device_code` y puede recibir
+   `authorization_pending`, `slow_down`, `expired_token` o `invalid_grant`.
+5. Al aprobarse recibe `access_token` (JWT propio, 15 min) y `refresh_token` (opaco, revocable).
+6. `POST /api/v1/auth/token` rota el refresh token y emite un acceso nuevo;
+   `POST /api/v1/auth/logout` lo revoca.
 
-El CLI pide ID tokens nuevos al backend (`POST /api/v1/auth/token`) usando su refresh token,
-y los usa en el handshake del WebSocket.
+Los códigos caducan en 10 minutos y solo se canjean una vez. El CLI guarda el refresh token en el
+keyring del sistema operativo.
 
 ### WebSocket
 
 - URL: `wss://ws.tchat.site/ws`
-- Handshake: `Authorization: Bearer <id_token>` (el CLI puede enviar cabeceras).
-- El servidor valida el token con Firebase Admin, carga el usuario y registra la conexión.
-- Cierre por expiración: el cliente reconecta con un token nuevo.
+- Handshake: `Authorization: Bearer <token>`. Acepta el JWT del CLI y los ID tokens de Firebase.
+- Cliente → servidor: `ping`, `message.send`, `message.read`, `typing.start`, `typing.stop`.
+- Servidor → cliente: `pong`, `message.new`, `message.ack`, `presence.update`, `typing.update`,
+  `error`.
+- Cada mensaje se entrega a todos los miembros conectados de la conversación.
+- Presencia: `online` al abrir la primera conexión del usuario y `offline` al cerrar la última.
+- El registro de conexiones vive en memoria: para escalar a varias instancias hay que moverlo a
+  Redis con pub/sub.
+
+## Superficie HTTP
+
+| Grupo          | Rutas                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Salud          | `GET /health`, `GET /health/ready`                                                                                             |
+| Meta           | `GET /api/v1/meta`                                                                                                             |
+| Auth           | `POST /api/v1/auth/sync`, `/device/start`, `/device/approve`, `/device/token`, `/token`, `/logout`                             |
+| Usuarios       | `GET/PATCH /api/v1/users/me`, `GET /users/search`, `GET /users/{username}`                                                     |
+| Amistades      | `GET /friends`, `GET/POST /friends/requests`, `POST /friends/requests/{id}/accept` y `/reject`, `DELETE /friends/{user_id}`    |
+| Conversaciones | `GET/POST /conversations`, `GET /conversations/{id}`, `GET/POST /conversations/{id}/messages`, `POST /conversations/{id}/read` |
 
 ## Modelo de datos
 
-| Tabla                  | Campos principales                                                          |
-| ---------------------- | --------------------------------------------------------------------------- |
-| `users`                | `id`, `firebase_uid`, `username`, `display_name`, `created_at`              |
-| `friendships`          | `id`, `requester_id`, `addressee_id`, `status`, `created_at`, `accepted_at` |
-| `conversations`        | `id`, `type` (direct/group), `created_at`                                   |
-| `conversation_members` | `conversation_id`, `user_id`, `joined_at`                                   |
-| `messages`             | `id`, `conversation_id`, `sender_id`, `body`, `created_at`, `edited_at`     |
-| `device_tokens`        | `id`, `user_id`, `token_hash`, `name`, `last_used_at`, `revoked_at`         |
+| Tabla                  | Campos principales                                                                      |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| `users`                | `id`, `firebase_uid`, `username`, `email`, `display_name`, `created_at`                 |
+| `friendships`          | `id`, `requester_id`, `addressee_id`, `status`, `created_at`, `responded_at`            |
+| `conversations`        | `id`, `type` (direct/group), `title`, `created_by`, `updated_at`                        |
+| `conversation_members` | `conversation_id`, `user_id`, `joined_at`, `last_read_at`                               |
+| `messages`             | `id`, `conversation_id`, `sender_id`, `body`, `created_at`, `edited_at`                 |
+| `device_tokens`        | `id`, `user_id`, `token_hash`, `name`, `last_used_at`, `revoked_at`                     |
+| `device_codes`         | `id`, `user_code`, `device_code_hash`, `status`, `user_id`, `expires_at`, `approved_at` |
 
-Los IDs son UUID v7 para ordenar por tiempo sin exponer secuencias.
+Los IDs son UUID v7 monótonos: ordenan por tiempo incluso dentro del mismo milisegundo. El refresh
+token y el device code nunca se guardan en claro, solo su SHA-256.
 
 ## Puertos locales
 

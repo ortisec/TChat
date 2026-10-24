@@ -24,6 +24,13 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://tchat:tchat@localhost:5432/tchat"
     cors_origins: str = "http://localhost:4321,http://localhost:4322,http://localhost:4323"
     firebase_project_id: str = "tchat-c20ce"
+    firebase_service_account_json: str | None = None
+    public_account_url: str = "http://localhost:4322"
+    auth_jwt_secret: str = "dev-secret-change-me-32-characters-long"
+    auth_jwt_issuer: str = "tchat"
+    access_token_ttl_seconds: int = 900
+    device_code_ttl_seconds: int = 600
+    device_poll_interval_seconds: int = 5
 
     @property
     def cors_origin_list(self) -> list[str]:
