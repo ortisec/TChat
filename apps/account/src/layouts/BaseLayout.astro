@@ -1,0 +1,46 @@
+---
+import { Logo } from "@tchat/ui";
+
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const siteUrl = import.meta.env.PUBLIC_SITE_URL ?? "http://localhost:4321";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="border-b border-neutral-900">
+      <div class="container-page flex h-16 items-center justify-between">
+        <a href={siteUrl} aria-label="TChat, inicio">
+          <Logo />
+        </a>
+        <a class="text-sm text-neutral-400 transition-colors hover:text-neutral-100" href={siteUrl}>
+          Volver al sitio
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="py-10">
+      <div class="container-page text-xs text-neutral-600">
+        <p>Tu identidad la gestiona Firebase. TChat nunca almacena tu contraseña.</p>
+      </div>
+    </footer>
+  </body>
+</html>

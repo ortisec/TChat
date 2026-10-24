@@ -2,7 +2,7 @@
 
 Chat de terminal. Autenticación web, identidad propia y mensajería en tiempo real desde la terminal.
 
-> **Estado: Paso 2 de 7 — backend base y contrato.**
+> **Estado: Paso 3 de 7 — tres apps web.**
 > Hoja de ruta completa en [docs/roadmap.md](docs/roadmap.md).
 
 ## La arquitectura en una frase
@@ -12,15 +12,15 @@ contra FastAPI + PostgreSQL en el VPS, con WebSocket para mensajería y presenci
 
 ## Superficies del producto
 
-| Superficie | Carpeta | Dominio | Despliegue |
-| --- | --- | --- | --- |
-| Landing pública | `apps/www` | `tchat.site` | Vercel |
-| Registro / login / perfil | `apps/account` | `app.tchat.site` | Vercel |
-| Descargas e instaladores | `apps/download` | `cli.tchat.site` | Vercel |
-| Cliente de terminal | `apps/cli` | — | GitHub Releases |
-| API REST + WebSocket | `services/api` | `api.tchat.site` / `ws.tchat.site` | VPS (Docker) |
-| Base de datos | `services/api` + `infra/compose` | — | VPS (Docker) |
-| Autenticación | Firebase Auth | — | Google (externo) |
+| Superficie                | Carpeta                          | Dominio                            | Despliegue       |
+| ------------------------- | -------------------------------- | ---------------------------------- | ---------------- |
+| Landing pública           | `apps/www`                       | `tchat.site`                       | Vercel           |
+| Registro / login / perfil | `apps/account`                   | `app.tchat.site`                   | Vercel           |
+| Descargas e instaladores  | `apps/download`                  | `cli.tchat.site`                   | Vercel           |
+| Cliente de terminal       | `apps/cli`                       | —                                  | GitHub Releases  |
+| API REST + WebSocket      | `services/api`                   | `api.tchat.site` / `ws.tchat.site` | VPS (Docker)     |
+| Base de datos             | `services/api` + `infra/compose` | —                                  | VPS (Docker)     |
+| Autenticación             | Firebase Auth                    | —                                  | Google (externo) |
 
 ## Estructura del repositorio
 
@@ -51,14 +51,14 @@ tchat/
 
 ## Requisitos locales
 
-| Herramienta | Versión | Instalación |
-| --- | --- | --- |
-| Node.js | 24 LTS | `winget install OpenJS.NodeJS.LTS` |
-| pnpm | 12 | `npm install -g pnpm` |
-| uv | 0.9+ | `winget install astral-sh.uv` |
-| Rust | stable | `winget install Rustlang.Rustup` |
-| Docker Desktop | 29+ | `winget install Docker.DockerDesktop` |
-| just | 1.59+ | `winget install Casey.Just` |
+| Herramienta    | Versión | Instalación                           |
+| -------------- | ------- | ------------------------------------- |
+| Node.js        | 24 LTS  | `winget install OpenJS.NodeJS.LTS`    |
+| pnpm           | 12      | `npm install -g pnpm`                 |
+| uv             | 0.9+    | `winget install astral-sh.uv`         |
+| Rust           | stable  | `winget install Rustlang.Rustup`      |
+| Docker Desktop | 29+     | `winget install Docker.DockerDesktop` |
+| just           | 1.59+   | `winget install Casey.Just`           |
 
 Tras instalar `just`, abre una terminal nueva para que el `PATH` se actualice.
 
@@ -70,6 +70,7 @@ just install      # instala dependencias JS y Python
 just up           # PostgreSQL local en :5432
 just migrate      # aplica migraciones
 just api          # API en http://localhost:8000/docs
+just dev          # las tres apps web en :4321, :4322 y :4323
 just test         # tests de la API
 just gen-client   # exporta OpenAPI y regenera el cliente TS
 just check        # formato, lint y tipos de todo el monorepo

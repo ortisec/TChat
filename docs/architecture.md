@@ -95,13 +95,13 @@ dos veces: Pydantic (backend) y Serde (Rust). Los nombres de eventos son el cont
 
 ## Subdominios y despliegue
 
-| Dominio | Proyecto Vercel | Contenido |
-| --- | --- | --- |
-| `tchat.site` | `tchat-www` | Landing, capturas, enlaces |
-| `app.tchat.site` | `tchat-account` | Registro, login, perfil, vinculación del CLI |
+| Dominio          | Proyecto Vercel  | Contenido                                             |
+| ---------------- | ---------------- | ----------------------------------------------------- |
+| `tchat.site`     | `tchat-www`      | Landing, capturas, enlaces                            |
+| `app.tchat.site` | `tchat-account`  | Registro, login, perfil, vinculación del CLI          |
 | `cli.tchat.site` | `tchat-download` | Descargas, `install.sh`, `install.ps1`, `latest.json` |
-| `api.tchat.site` | VPS (Caddy) | API REST `/api/v1/*` |
-| `ws.tchat.site` | VPS (Caddy) | WebSocket `/ws` |
+| `api.tchat.site` | VPS (Caddy)      | API REST `/api/v1/*`                                  |
+| `ws.tchat.site`  | VPS (Caddy)      | WebSocket `/ws`                                       |
 
 Los binarios **no** se alojan en Vercel: viven en GitHub Releases y la página de descargas
 enlaza a los assets y sirve los scripts de instalación.
@@ -146,33 +146,34 @@ y los usa en el handshake del WebSocket.
 
 ## Modelo de datos
 
-| Tabla | Campos principales |
-| --- | --- |
-| `users` | `id`, `firebase_uid`, `username`, `display_name`, `created_at` |
-| `friendships` | `id`, `requester_id`, `addressee_id`, `status`, `created_at`, `accepted_at` |
-| `conversations` | `id`, `type` (direct/group), `created_at` |
-| `conversation_members` | `conversation_id`, `user_id`, `joined_at` |
-| `messages` | `id`, `conversation_id`, `sender_id`, `body`, `created_at`, `edited_at` |
-| `device_tokens` | `id`, `user_id`, `token_hash`, `name`, `last_used_at`, `revoked_at` |
+| Tabla                  | Campos principales                                                          |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `users`                | `id`, `firebase_uid`, `username`, `display_name`, `created_at`              |
+| `friendships`          | `id`, `requester_id`, `addressee_id`, `status`, `created_at`, `accepted_at` |
+| `conversations`        | `id`, `type` (direct/group), `created_at`                                   |
+| `conversation_members` | `conversation_id`, `user_id`, `joined_at`                                   |
+| `messages`             | `id`, `conversation_id`, `sender_id`, `body`, `created_at`, `edited_at`     |
+| `device_tokens`        | `id`, `user_id`, `token_hash`, `name`, `last_used_at`, `revoked_at`         |
 
 Los IDs son UUID v7 para ordenar por tiempo sin exponer secuencias.
 
 ## Puertos locales
 
-| Servicio | Puerto |
-| --- | --- |
-| `apps/www` | 4321 |
-| `apps/account` | 4322 |
-| `apps/download` | 4323 |
-| `services/api` | 8000 |
-| PostgreSQL (compose) | 5432 |
+| Servicio             | Puerto |
+| -------------------- | ------ |
+| `apps/www`           | 4321   |
+| `apps/account`       | 4322   |
+| `apps/download`      | 4323   |
+| `services/api`       | 8000   |
+| PostgreSQL (compose) | 5432   |
 
 ## Variables de entorno
 
-| Ámbito | Variables |
-| --- | --- |
-| Web (públicas, Vercel) | `PUBLIC_FIREBASE_API_KEY`, `PUBLIC_FIREBASE_AUTH_DOMAIN`, `PUBLIC_FIREBASE_PROJECT_ID`, `PUBLIC_API_URL`, `PUBLIC_WS_URL` |
-| API (privadas, VPS) | `DATABASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `CORS_ORIGINS`, `TOKEN_TTL_SECONDS` |
-| CLI | ninguno obligatorio; la configuración vive en el keyring y en el directorio de configuración del usuario |
+| Ámbito                 | Variables                                                                                                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web (públicas, Vercel) | `PUBLIC_FIREBASE_API_KEY`, `PUBLIC_FIREBASE_AUTH_DOMAIN`, `PUBLIC_FIREBASE_PROJECT_ID`, `PUBLIC_FIREBASE_APP_ID`, `PUBLIC_FIREBASE_SENDER_ID`, `PUBLIC_API_URL`, `PUBLIC_WS_URL` |
+| Enlaces entre apps     | `PUBLIC_SITE_URL`, `PUBLIC_ACCOUNT_URL`, `PUBLIC_DOWNLOAD_URL`, `PUBLIC_RELEASES_URL`                                                                                            |
+| API (privadas, VPS)    | `DATABASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `CORS_ORIGINS`, `TOKEN_TTL_SECONDS`                                                                      |
+| CLI                    | ninguno obligatorio; la configuración vive en el keyring y en el directorio de configuración del usuario                                                                         |
 
 Ningún secreto se versiona. Cada superficie incluye su propio `.env.example`.

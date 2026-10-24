@@ -29,11 +29,11 @@ Documentación interactiva: <http://localhost:8000/docs>
 
 ## Endpoints del Paso 2
 
-| Método | Ruta | Descripción |
-| --- | --- | --- |
-| GET | `/health` | Liveness (no toca la base de datos) |
-| GET | `/health/ready` | Readiness (comprueba PostgreSQL) |
-| GET | `/api/v1/meta` | Nombre, versión, entorno y proyecto Firebase |
+| Método | Ruta            | Descripción                                  |
+| ------ | --------------- | -------------------------------------------- |
+| GET    | `/health`       | Liveness (no toca la base de datos)          |
+| GET    | `/health/ready` | Readiness (comprueba PostgreSQL)             |
+| GET    | `/api/v1/meta`  | Nombre, versión, entorno y proyecto Firebase |
 
 ## Contrato
 

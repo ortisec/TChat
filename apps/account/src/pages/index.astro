@@ -1,0 +1,10 @@
+---
+import AuthPanel from "../components/AuthPanel";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Tu cuenta — TChat">
+  <section class="container-page flex justify-center py-16 sm:py-24">
+    <AuthPanel client:load />
+  </section>
+</BaseLayout>

@@ -17,38 +17,38 @@
 }
 ```
 
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| `type` | string | Nombre del evento |
-| `id` | uuid | Identificador del evento (para acuses) |
-| `ts` | RFC 3339 | Marca de tiempo del emisor |
-| `payload` | object | Cuerpo específico del evento |
+| Campo     | Tipo     | Descripción                            |
+| --------- | -------- | -------------------------------------- |
+| `type`    | string   | Nombre del evento                      |
+| `id`      | uuid     | Identificador del evento (para acuses) |
+| `ts`      | RFC 3339 | Marca de tiempo del emisor             |
+| `payload` | object   | Cuerpo específico del evento           |
 
 ## Cliente → servidor
 
-| `type` | payload | Descripción |
-| --- | --- | --- |
-| `ping` | `{}` | Keepalive; el servidor responde `pong` |
-| `message.send` | `conversation_id`, `body`, `client_id` | Envía un mensaje |
-| `message.read` | `conversation_id`, `up_to_message_id` | Marca como leído |
-| `typing.start` | `conversation_id` | El usuario está escribiendo |
-| `typing.stop` | `conversation_id` | Dejó de escribir |
+| `type`         | payload                                | Descripción                            |
+| -------------- | -------------------------------------- | -------------------------------------- |
+| `ping`         | `{}`                                   | Keepalive; el servidor responde `pong` |
+| `message.send` | `conversation_id`, `body`, `client_id` | Envía un mensaje                       |
+| `message.read` | `conversation_id`, `up_to_message_id`  | Marca como leído                       |
+| `typing.start` | `conversation_id`                      | El usuario está escribiendo            |
+| `typing.stop`  | `conversation_id`                      | Dejó de escribir                       |
 
 ## Servidor → cliente
 
-| `type` | payload | Descripción |
-| --- | --- | --- |
-| `pong` | `{}` | Respuesta a `ping` |
-| `message.new` | `message` | Mensaje entrante |
-| `message.ack` | `client_id`, `message_id`, `created_at` | Confirmación de envío |
-| `presence.update` | `user_id`, `status` | `online` / `offline` |
-| `error` | `code`, `message`, `ref` | Error asociado a un evento |
+| `type`            | payload                                 | Descripción                |
+| ----------------- | --------------------------------------- | -------------------------- |
+| `pong`            | `{}`                                    | Respuesta a `ping`         |
+| `message.new`     | `message`                               | Mensaje entrante           |
+| `message.ack`     | `client_id`, `message_id`, `created_at` | Confirmación de envío      |
+| `presence.update` | `user_id`, `status`                     | `online` / `offline`       |
+| `error`           | `code`, `message`, `ref`                | Error asociado a un evento |
 
 ## Errores previstos
 
-| `code` | Significado |
-| --- | --- |
-| `unauthorized` | Token inválido o expirado; el cliente debe renovarlo y reconectar |
-| `forbidden` | No pertenece a la conversación |
-| `invalid_payload` | Cuerpo fuera de contrato |
-| `rate_limited` | Demasiados eventos por ventana |
+| `code`            | Significado                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| `unauthorized`    | Token inválido o expirado; el cliente debe renovarlo y reconectar |
+| `forbidden`       | No pertenece a la conversación                                    |
+| `invalid_payload` | Cuerpo fuera de contrato                                          |
+| `rate_limited`    | Demasiados eventos por ventana                                    |

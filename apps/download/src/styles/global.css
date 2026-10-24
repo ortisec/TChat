@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "../../../../packages/ui/src/styles/theme.css";
+
+@source "../../../../packages/ui/src";
+@source "../../src";
+
+@layer base {
+  html {
+    @apply bg-neutral-950 text-neutral-100 antialiased;
+  }
+
+  body {
+    @apply min-h-dvh font-sans;
+  }
+
+  ::selection {
+    @apply bg-neutral-100 text-neutral-950;
+  }
+}

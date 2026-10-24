@@ -1,0 +1,11 @@
+{
+  "name": "@tchat/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig": "./tsconfig.base.json",
+    "./prettier": "./prettier.config.mjs",
+    "./eslint": "./eslint.config.mjs"
+  }
+}

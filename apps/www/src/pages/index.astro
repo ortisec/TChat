@@ -1,0 +1,125 @@
+---
+import { Badge, Button, Card, CardDescription, CardTitle } from "@tchat/ui";
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const accountUrl = import.meta.env.PUBLIC_ACCOUNT_URL ?? "http://localhost:4322";
+const downloadUrl = import.meta.env.PUBLIC_DOWNLOAD_URL ?? "http://localhost:4323";
+
+const features = [
+  {
+    title: "Simple",
+    description:
+      "Un binario y nada más. Sin navegador, sin pestañas, sin notificaciones que interrumpan.",
+  },
+  {
+    title: "Seguro",
+    description:
+      "Firebase gestiona tu identidad. El servidor valida cada token y nunca guarda contraseñas.",
+  },
+  {
+    title: "Multiplataforma",
+    description: "Windows, Linux y macOS. La misma experiencia en cualquier terminal.",
+  },
+];
+
+const steps = [
+  {
+    title: "Crea tu cuenta",
+    description: "Regístrate en la web con correo o Google. Tarda menos de un minuto.",
+  },
+  {
+    title: "Instala el cliente",
+    description: "Descarga el binario para tu sistema y ejecútalo desde cualquier terminal.",
+  },
+  {
+    title: "Inicia sesión",
+    description: "Ejecuta tchat login, autoriza el dispositivo en el navegador y listo.",
+  },
+];
+---
+
+<BaseLayout title="TChat — chat de terminal">
+  <section class="container-page pt-20 pb-16 sm:pt-28">
+    <Badge>Terminal · tiempo real</Badge>
+    <h1 class="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
+      Tu chat vive en la terminal.
+    </h1>
+    <p class="mt-6 max-w-2xl text-lg leading-relaxed text-neutral-400">
+      TChat combina la autenticación web con una experiencia de mensajería nativa en tu terminal.
+      Sin ruido, sin distracciones: solo tú y tus conversaciones.
+    </p>
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <Button href={accountUrl}>Crear cuenta</Button>
+      <Button href={downloadUrl} variant="secondary">
+        Ver descargas
+      </Button>
+    </div>
+    <p class="mt-4 font-mono text-xs text-neutral-600">Windows · Linux · macOS — un solo binario</p>
+  </section>
+
+  <section class="container-page">
+    <div class="overflow-hidden rounded-card border border-neutral-800 bg-neutral-900/40">
+      <div class="flex items-center gap-2 border-b border-neutral-800 px-4 py-3">
+        <span class="h-2.5 w-2.5 rounded-full bg-neutral-700"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-neutral-700"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-neutral-700"></span>
+        <span class="ml-3 font-mono text-xs text-neutral-500">tchat — zsh</span>
+      </div>
+      <pre class="overflow-x-auto p-5 font-mono text-sm leading-relaxed text-neutral-300"><code><span class="text-neutral-500">$</span> tchat login
+<span class="text-neutral-400">→ Abre https://app.tchat.site/cli-auth y confirma el código</span>
+<span class="text-neutral-100">✓</span> Sesión iniciada como <span class="text-neutral-100">@guillermo</span>
+
+<span class="text-neutral-500">$</span> tchat
+<span class="text-neutral-500">┌─ conversaciones ─────┬─ #equipo ─────────────────────┐</span>
+<span class="text-neutral-500">│</span> <span class="text-neutral-100">● ana</span>     <span class="text-neutral-500">10:42</span>  <span class="text-neutral-500">│</span> <span class="text-neutral-400">ana</span>   listo el deploy
+<span class="text-neutral-500">│</span> <span class="text-neutral-300">○ luis</span>    <span class="text-neutral-500">09:18</span>  <span class="text-neutral-500">│</span> <span class="text-neutral-400">yo</span>    ¿probamos el WS?
+<span class="text-neutral-500">│</span> <span class="text-neutral-300">○ equipo</span>  <span class="text-neutral-500">ayer</span>   <span class="text-neutral-500">│</span> <span class="text-neutral-600">—</span>
+<span class="text-neutral-500">├──────────────────────┴───────────────────────────────┤</span>
+<span class="text-neutral-500">│</span> <span class="text-neutral-500">&gt;</span> escribir mensaje…                                  <span class="text-neutral-500">│</span>
+<span class="text-neutral-500">└──────────────────────────────────────────────────────┘</span></code></pre>
+    </div>
+  </section>
+
+  <section class="container-page mt-24">
+    <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">Hecho para no molestar</h2>
+    <div class="mt-8 grid gap-4 sm:grid-cols-3">
+      {features.map((feature) => (
+        <Card>
+          <CardTitle>{feature.title}</CardTitle>
+          <CardDescription>{feature.description}</CardDescription>
+        </Card>
+      ))}
+    </div>
+  </section>
+
+  <section id="como-funciona" class="container-page mt-24 scroll-mt-24">
+    <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">Cómo funciona</h2>
+    <ol class="mt-8 grid gap-4 sm:grid-cols-3">
+      {steps.map((step, index) => (
+        <li class="rounded-card border border-neutral-800 p-6">
+          <span class="font-mono text-xs text-neutral-500">0{index + 1}</span>
+          <h3 class="mt-3 text-base font-semibold text-neutral-100">{step.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-neutral-400">{step.description}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="container-page mt-24">
+    <div class="flex flex-col items-start justify-between gap-6 rounded-card border border-neutral-800 bg-neutral-900/40 p-8 sm:flex-row sm:items-center">
+      <div>
+        <h2 class="text-xl font-semibold tracking-tight">Empieza en dos minutos</h2>
+        <p class="mt-2 text-sm text-neutral-400">
+          Crea tu cuenta, instala el cliente y ejecuta <span class="font-mono">tchat login</span>.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <Button href={accountUrl}>Crear cuenta</Button>
+        <Button href={downloadUrl} variant="secondary">
+          Descargar
+        </Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

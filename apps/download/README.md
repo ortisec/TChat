@@ -1,10 +1,22 @@
 # apps/download — descargas
 
-Proyecto Astro para **`cli.tchat.site`**.
+Proyecto Astro + React para **`cli.tchat.site`**.
 
-- Detecta el sistema operativo y ofrece el binario correcto.
-- Sirve `install.sh`, `install.ps1` y `latest.json` (versión y checksums).
-- Los binarios viven en GitHub Releases; esta app solo enlaza y verifica.
-- Se despliega en Vercel con *Root Directory* `apps/download`.
+- Detecta el sistema operativo del visitante en el navegador y resalta su plataforma.
+- Tarjetas para Windows, macOS y Linux con el nombre de artefacto que publicará `cargo-dist`.
+- Enlaces a GitHub Releases: los binarios no se alojan en Vercel.
+- Comandos de instalación previstos (`install.sh` / `install.ps1`).
 
-**Estado:** pendiente (Paso 3). Los instaladores se generan con `cargo-dist` en el Paso 7.
+## Desarrollo
+
+```powershell
+pnpm --filter @tchat/download dev   # http://localhost:4323
+```
+
+## Variables
+
+| Variable              | Uso                                                 |
+| --------------------- | --------------------------------------------------- |
+| `PUBLIC_RELEASES_URL` | Página de releases (por defecto la del repositorio) |
+
+**Estado:** Paso 3 completado. Los binarios e instaladores reales se generan en el Paso 7.

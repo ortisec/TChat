@@ -1,0 +1,10 @@
+---
+import CliAuthPanel from "../components/CliAuthPanel";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Autorizar terminal — TChat">
+  <section class="container-page flex justify-center py-16 sm:py-24">
+    <CliAuthPanel client:load />
+  </section>
+</BaseLayout>

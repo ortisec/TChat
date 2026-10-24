@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+uv.lock
+**/node_modules/**
+**/dist/**
+**/.astro/**
+**/.venv/**
+**/target/**
+packages/api-client/src/schema.d.ts
+packages/contracts/openapi.json
+docs/assets/*.png

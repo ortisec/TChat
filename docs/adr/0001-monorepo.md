@@ -28,7 +28,7 @@ y su lockfile dentro de su carpeta (`apps/*/package.json`, `apps/cli/Cargo.toml`
 - Un PR puede cambiar API + web + CLI y CI valida el conjunto.
 - No hay publicación de paquetes internos ni versionado cruzado.
 - El clonado es algo más pesado y CI necesita filtros por rutas para no ejecutar todo siempre.
-- Vercel requiere configurar *Root Directory* por proyecto y activar el soporte de monorepo.
+- Vercel requiere configurar _Root Directory_ por proyecto y activar el soporte de monorepo.
 
 ## Alternativas descartadas
 

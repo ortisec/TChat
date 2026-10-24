@@ -4,7 +4,7 @@ Siete pasos. Cada paso deja el repositorio en un estado coherente, con CI en ver
 demostrable. Al final de cada bloque se indica **tu parte**: lo que solo puedes hacer tú
 (paneles, secretos, cuentas).
 
-Estado actual: **Paso 2 de 7 completado**.
+Estado actual: **Paso 3 de 7 completado**.
 
 ---
 
@@ -55,7 +55,7 @@ Estado actual: **Paso 2 de 7 completado**.
 
 ---
 
-## Paso 3 — Las tres apps web
+## Paso 3 — Las tres apps web ✅
 
 **Entregables**
 
@@ -68,14 +68,18 @@ Estado actual: **Paso 2 de 7 completado**.
 
 **Tu parte**
 
-1. Crear tres proyectos en Vercel apuntando al mismo repo, cada uno con su *Root Directory*
+1. ✅ Email/Password y Google habilitados en Firebase.
+2. Crear (si no existe) la **Web App** en Firebase Console → Project settings → General → Your
+   apps. Copiar `apiKey` y `appId` a `apps/account/.env` y a las variables de Vercel.
+3. Crear tres proyectos en Vercel apuntando al mismo repo, cada uno con su _Root Directory_
    (`apps/www`, `apps/account`, `apps/download`).
-2. Asignar dominios: `tchat.site`, `app.tchat.site`, `cli.tchat.site`.
-3. Añadir esos dominios en Firebase → Authentication → Settings → Authorized domains.
-4. Pegar las variables `PUBLIC_*` en cada proyecto de Vercel.
+4. Asignar dominios: `tchat.site`, `app.tchat.site`, `cli.tchat.site`.
+5. Añadir esos dominios en Firebase → Authentication → Settings → Authorized domains.
+6. Pegar las variables `PUBLIC_*` en cada proyecto de Vercel.
 
 **Criterio de hecho:** las tres URLs cargan en grises, el registro crea usuario en Firebase y
-`/cli-auth` responde con el código del dispositivo.
+`/cli-auth` pide la cuenta. Verificado en local con build de producción; el registro real queda
+pendiente de las claves web de Firebase (`apiKey` y `appId`).
 
 ---
 

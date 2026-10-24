@@ -18,6 +18,10 @@ up:
 down:
     docker compose -f infra/compose/docker-compose.yml down
 
+# Arranca las tres apps web en paralelo (4321, 4322, 4323)
+dev:
+    pnpm dev
+
 # Arranca la API con recarga en el puerto 8000
 api:
     uv --directory services/api run uvicorn tchat_api.main:app --reload --port 8000
@@ -44,7 +48,8 @@ check:
     uv --directory services/api run ruff format --check .
     uv --directory services/api run ruff check .
     uv --directory services/api run mypy src
-    pnpm -r --if-present lint
+    pnpm lint
+    pnpm format:check
     pnpm -r --if-present typecheck
 
 # Compila todas las apps web
