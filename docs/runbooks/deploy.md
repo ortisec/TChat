@@ -46,6 +46,12 @@ directory** para que pnpm resuelva `packages/ui` y `packages/config`.
 | `tchat-account`  | `apps/account`  | `app.tchat.ortisec.site` |
 | `tchat-download` | `apps/download` | `cli.tchat.ortisec.site` |
 
+> **Error típico:** `No Output Directory named "dist" found`. Significa que el proyecto está
+> construyendo desde la raíz del monorepo: el build deja `apps/www/dist` y Vercel busca `dist/`.
+> Corrige **Root Directory** a `apps/www` (o el de la app), marca el preset **Astro** y deja
+> **Output Directory** en `dist`. Después, _Redeploy_ sin caché. Los `vercel.json` de cada app
+> fijan `outputDirectory` para evitarlo.
+
 Variables de entorno (Production y Preview):
 
 ```env
