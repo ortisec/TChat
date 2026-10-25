@@ -1,0 +1,39 @@
+name: Latest release metadata
+
+on:
+  workflow_call:
+    inputs:
+      plan:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  latest-json:
+    name: Publicar latest.json
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PLAN: ${{ inputs.plan }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generar latest.json
+        run: |
+          TAG="$(jq -r '.announcement_tag' <<< "$PLAN")"
+          echo "Release: $TAG"
+          bash infra/scripts/latest-json.sh "$TAG" latest.json
+
+      - name: Adjuntar a la release
+        run: |
+          TAG="$(jq -r '.announcement_tag' <<< "$PLAN")"
+          gh release upload "$TAG" latest.json --clobber
+
+      - name: Resumen
+        run: |
+          echo "### latest.json publicado" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat latest.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

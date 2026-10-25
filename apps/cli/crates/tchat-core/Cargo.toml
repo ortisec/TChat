@@ -6,6 +6,9 @@ license.workspace = true
 rust-version.workspace = true
 description = "Cliente HTTP, WebSocket y autenticación de TChat"
 
+[package.metadata.dist]
+dist = false
+
 [dependencies]
 chrono.workspace = true
 futures-util = "0.3.34"

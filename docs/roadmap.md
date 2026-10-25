@@ -4,7 +4,8 @@ Siete pasos. Cada paso deja el repositorio en un estado coherente, con CI en ver
 demostrable. Al final de cada bloque se indica **tu parte**: lo que solo puedes hacer tú
 (paneles, secretos, cuentas).
 
-Estado actual: **Paso 6 de 7 completado**.
+Estado actual: **Paso 7 de 7 completado**. Los 7 pasos de construcción están cerrados; quedan las
+tareas de activación en producción (VPS, DNS, primer tag y claves de Firebase).
 
 ---
 
@@ -157,19 +158,25 @@ contenedor, compose de producción y Caddyfile validados. Falta ejecutarlo en tu
 
 ---
 
-## Paso 7 — Release del CLI y CI/CD completo
+## Paso 7 — Release del CLI y CI/CD completo ✅
 
 **Entregables**
 
-- `cargo-dist` configurado: `.msi`, `.tar.gz`, checksums e instaladores.
-- Workflow de release por tag `cli-v*` para Windows, Linux (glibc y musl) y macOS (x86_64 y arm64).
-- `latest.json` y scripts `install.sh` / `install.ps1` servidos desde `cli.tchat.site`.
-- CI/CD completo documentado y `docs/runbooks/`.
+- `cargo-dist` configurado: `.msi`, `.zip`/`.tar.xz`, checksums e instaladores shell/PowerShell.
+- Workflow de release por tag `tchat-cli-v*` para Windows, Linux (glibc y musl) y macOS
+  (x86_64 y arm64).
+- `latest.json`, `install.sh` e `install.ps1` accesibles desde `cli.tchat.site` (rewrites a GitHub).
+- Página de descargas que lee la última release y enlaza al artefacto de cada plataforma.
+- CI/CD completo documentado en `docs/runbooks/`.
 
 **Tu parte**
 
 1. Probar la instalación en una máquina limpia de Windows (`install.ps1`).
 2. Revisar que los binarios de macOS/Linux arrancan (o pasármelo para probar en CI).
-3. Definir la versión inicial (`v0.1.0`).
+3. Publicar el primer tag: `tchat-cli-v0.1.0`.
+4. Confirmar que `https://cli.tchat.site/latest.json` devuelve la versión y que los botones de
+   descarga apuntan a los assets correctos.
 
 **Criterio de hecho:** un usuario nuevo instala con un comando, ejecuta `tchat login` y chatea.
+El pipeline está verificado en local con un build real de cargo-dist (zip, instaladores y
+checksums); los binarios de macOS/Linux y el MSI los produce GitHub Actions al publicar el tag.

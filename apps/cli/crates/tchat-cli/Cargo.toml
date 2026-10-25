@@ -5,6 +5,17 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 description = "Cliente de terminal de TChat"
+repository = "https://github.com/ortisec/TChat"
+authors = ["Jose Guillermo Ortiz Quispe"]
+
+[package.metadata.dist]
+dist = true
+
+[package.metadata.wix]
+upgrade-guid = "aa100a8e-3ee9-4110-9ff8-f20ceee29dab"
+path-guid = "ee6b959c-5d72-4b50-9afb-60f32ef12ea5"
+license = false
+eula = false
 
 [[bin]]
 name = "tchat"

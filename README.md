@@ -2,7 +2,7 @@
 
 Chat de terminal. Autenticación web, identidad propia y mensajería en tiempo real desde la terminal.
 
-> **Estado: Paso 6 de 7 — infraestructura y despliegue.**
+> **Estado: Paso 7 de 7 — release del cliente y CI/CD completo.**
 > Hoja de ruta completa en [docs/roadmap.md](docs/roadmap.md).
 
 ## La arquitectura en una frase
@@ -84,6 +84,17 @@ just check        # formato, lint y tipos de todo el monorepo
 - [Arquitectura](docs/architecture.md)
 - [Roadmap de 7 pasos](docs/roadmap.md)
 - [Decisiones (ADR)](docs/adr/)
+- [Runbooks](docs/runbooks/): despliegue, backups y release del CLI
+
+## Publicar el cliente
+
+```powershell
+git tag tchat-cli-v0.1.0
+git push origin tchat-cli-v0.1.0
+```
+
+El tag dispara el workflow **Release**, que compila Windows/Linux/macOS, genera instaladores y
+publica `latest.json`. Detalles en [docs/runbooks/release-cli.md](docs/runbooks/release-cli.md).
 
 ## Licencia
 

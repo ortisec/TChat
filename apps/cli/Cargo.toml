@@ -12,6 +12,22 @@ edition = "2024"
 license = "UNLICENSED"
 rust-version = "1.85"
 
+[workspace.metadata.dist]
+cargo-dist-version = "0.32.0"
+ci = ["github"]
+allow-dirty = ["ci"]
+installers = ["msi", "shell", "powershell"]
+targets = [
+    "x86_64-pc-windows-msvc",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+]
+tag-namespace = "tchat-cli"
+post-announce-jobs = ["./latest-json"]
+pr-run-mode = "skip"
+
 [workspace.dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
@@ -19,3 +35,7 @@ serde_json = "1"
 thiserror = "2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 uuid = { version = "1", features = ["v4", "serde"] }
+
+[profile.dist]
+inherits = "release"
+lto = "thin"

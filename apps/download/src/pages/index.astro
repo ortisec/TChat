@@ -7,7 +7,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout title="Descargar TChat">
   <section class="container-page pt-20 pb-12 sm:pt-24">
-    <Badge>v0.1.0 · en preparación</Badge>
+    <Badge>GitHub Releases · instaladores firmados</Badge>
     <h1 class="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">Descarga TChat</h1>
     <p class="mt-4 max-w-xl text-lg leading-relaxed text-neutral-400">
       Un solo binario. Elige tu sistema y ejecútalo desde cualquier terminal.
@@ -17,8 +17,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <section class="container-page">
     <PlatformDownload client:load />
     <p class="mt-4 text-xs text-neutral-600">
-      Los binarios se publican en GitHub Releases, con checksums y notas de versión. La primera
-      release llega al cerrar el Paso 7 del proyecto.
+      Los binarios se publican en GitHub Releases con checksums SHA-256. Esta página consulta
+      <span class="font-mono"> /latest.json</span> para ofrecer siempre la última versión.
     </p>
   </section>
 
@@ -44,8 +44,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </Card>
     </div>
     <p class="mt-4 text-xs text-neutral-600">
-      Los scripts de instalación se publican junto con la primera release (Paso 7). Hasta entonces
-      los enlaces apuntan a la página de releases del repositorio.
+      Los instaladores apuntan siempre a la última release publicada. Si prefieres revisar el código
+      antes de ejecutarlos, descarga el archivo desde GitHub Releases.
     </p>
   </section>
 

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/install.sh",
+      "destination": "https://github.com/ortisec/TChat/releases/latest/download/tchat-cli-installer.sh"
+    },
+    {
+      "source": "/install.ps1",
+      "destination": "https://github.com/ortisec/TChat/releases/latest/download/tchat-cli-installer.ps1"
+    },
+    {
+      "source": "/latest.json",
+      "destination": "https://github.com/ortisec/TChat/releases/latest/download/latest.json"
+    }
+  ]
+}

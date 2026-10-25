@@ -71,4 +71,10 @@ cargo test --workspace
 Cubren el sobre del protocolo, la decodificación de eventos, la configuración, los modelos y las
 transiciones de estado de la TUI (17 tests). No requieren red ni llavero.
 
-**Estado:** Paso 5 completado. Empaquetado e instaladores llegan en el Paso 7.
+## Release
+
+Los binarios se publican con cargo-dist al empujar un tag `tchat-cli-v*`:
+Windows (zip + msi), macOS (Intel y Apple Silicon), Linux (glibc y musl), instaladores
+`install.sh`/`install.ps1` y checksums. Ver `docs/runbooks/release-cli.md`.
+
+**Estado:** Paso 7 completado.

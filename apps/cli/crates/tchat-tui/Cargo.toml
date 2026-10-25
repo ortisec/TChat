@@ -6,6 +6,9 @@ license.workspace = true
 rust-version.workspace = true
 description = "Interfaz de terminal de TChat"
 
+[package.metadata.dist]
+dist = false
+
 [dependencies]
 anyhow = "1.0.104"
 chrono = { workspace = true, features = ["serde"] }

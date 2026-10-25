@@ -171,7 +171,17 @@ keyring del sistema operativo.
 - El refresh token vive en el llavero nativo (Credential Manager, Keychain o keyutils).
 - La TUI mantiene un WebSocket con reconexión y backoff; los mensajes del usuario se envían por
   WebSocket y el historial se carga por REST.
-- Compatible con Windows, Linux y macOS; el empaquetado con `cargo-dist` llega en el Paso 7.
+- Compatible con Windows, Linux y macOS; el empaquetado con `cargo-dist` se publica al empujar un
+  tag `tchat-cli-v*` (Paso 7).
+
+### Release del cliente
+
+- `cargo-dist` vive en `apps/cli` y publica al empujar un tag `tchat-cli-v*`.
+- Targets: Windows x86_64 (zip + MSI), macOS Intel y Apple Silicon, Linux x86_64 glibc y musl.
+- Instaladores `install.sh` / `install.ps1`, checksums SHA-256 y `latest.json`.
+- `cli.tchat.site` sirve los instaladores y los metadatos mediante rewrites de Vercel hacia
+  GitHub Releases: los binarios no pasan por Vercel.
+- La página de descargas lee `/latest.json` para mostrar versión y enlaces reales.
 
 ## Superficie HTTP
 
