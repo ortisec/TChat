@@ -45,7 +45,8 @@ También se pueden pasar como `--api-url`, `--ws-url` y `--account-url`.
 - El refresh token se guarda en el **llavero del sistema**:
   - Windows: Credential Manager (`windows-native`).
   - macOS: Keychain (`apple-native`).
-  - Linux: keyutils persistente (`linux-native-sync-persistent`).
+  - Linux: keyutils (`linux-native`). El token vive en el keyring del kernel de la sesión;
+  puede ser necesario volver a ejecutar `tchat login` tras reiniciar.
 - El access token dura 15 minutos y el cliente lo renueva solo; al agotarse el refresh hay que
   volver a ejecutar `tchat login`.
 - `tchat logout` revoca el token en la API y lo borra del llavero.

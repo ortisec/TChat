@@ -12,7 +12,6 @@ dist = false
 [dependencies]
 chrono.workspace = true
 futures-util = "0.3.34"
-keyring = "3.6.3"
 reqwest = { version = "0.13.5", default-features = false, features = [
     "json",
     "rustls",
@@ -36,10 +35,10 @@ url = "2.5.8"
 uuid = { workspace = true, features = ["v4", "serde"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-keyring = { version = "3.6.3", features = ["windows-native"] }
+keyring = { version = "3.6.3", default-features = false, features = ["windows-native"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-keyring = { version = "3.6.3", features = ["apple-native"] }
+keyring = { version = "3.6.3", default-features = false, features = ["apple-native"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-keyring = { version = "3.6.3", features = ["linux-native-sync-persistent"] }
+keyring = { version = "3.6.3", default-features = false, features = ["linux-native"] }
