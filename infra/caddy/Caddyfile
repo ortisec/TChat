@@ -2,13 +2,13 @@
 	email {$ACME_EMAIL}
 }
 
-api.tchat.site {
+api.tchat.ortisec.site {
 	encode zstd gzip
 	header -Server
 	reverse_proxy api:8000
 }
 
-ws.tchat.site {
+ws.tchat.ortisec.site {
 	header -Server
 	reverse_proxy api:8000
 }

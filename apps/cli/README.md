@@ -41,7 +41,7 @@ También se pueden pasar como `--api-url`, `--ws-url` y `--account-url`.
 
 ## Sesión y tokens
 
-- `tchat login` inicia el device flow, muestra el código y abre `app.tchat.site/cli-auth`.
+- `tchat login` inicia el device flow, muestra el código y abre `app.tchat.ortisec.site/cli-auth`.
 - El refresh token se guarda en el **llavero del sistema**:
   - Windows: Credential Manager (`windows-native`).
   - macOS: Keychain (`apple-native`).

@@ -7,7 +7,7 @@ export type { components, operations, paths } from "./schema";
 /**
  * Crea un cliente tipado contra el contrato OpenAPI de TChat.
  *
- * @param baseUrl URL base de la API, por ejemplo `https://api.tchat.site`.
+ * @param baseUrl URL base de la API, por ejemplo `https://api.tchat.ortisec.site`.
  * @param fetchImpl implementación de `fetch` (útil para inyectar cookies o tests).
  */
 export function createApiClient(baseUrl: string, fetchImpl?: typeof fetch) {

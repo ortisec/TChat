@@ -74,7 +74,7 @@ O configura `rclone`/restic con almacenamiento de objetos. Recomendado al menos 
 4. Verifica:
 
    ```bash
-   curl -fsS https://api.tchat.site/health/ready
+   curl -fsS https://api.tchat.ortisec.site/health/ready
    ```
 
    Y revisa que existan usuarios y mensajes recientes:

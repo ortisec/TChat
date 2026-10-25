@@ -16,9 +16,9 @@ los ID tokens con el Firebase Admin SDK y guarda únicamente `firebase_uid` como
 ```
 tchat/
 ├─ apps/
-│  ├─ www/                    # tchat.site        · landing pública
-│  ├─ account/                # app.tchat.site    · registro, login, perfil
-│  ├─ download/               # cli.tchat.site    · descargas e instaladores
+│  ├─ www/                    # tchat.ortisec.site        · landing pública
+│  ├─ account/                # app.tchat.ortisec.site    · registro, login, perfil
+│  ├─ download/               # cli.tchat.ortisec.site    · descargas e instaladores
 │  └─ cli/                    # Rust workspace
 │     └─ crates/
 │        ├─ tchat-core/       # HTTP, WebSocket, auth, modelos, protocolo
@@ -95,13 +95,16 @@ dos veces: Pydantic (backend) y Serde (Rust). Los nombres de eventos son el cont
 
 ## Subdominios y despliegue
 
-| Dominio          | Proyecto Vercel  | Contenido                                             |
-| ---------------- | ---------------- | ----------------------------------------------------- |
-| `tchat.site`     | `tchat-www`      | Landing, capturas, enlaces                            |
-| `app.tchat.site` | `tchat-account`  | Registro, login, perfil, vinculación del CLI          |
-| `cli.tchat.site` | `tchat-download` | Descargas, `install.sh`, `install.ps1`, `latest.json` |
-| `api.tchat.site` | VPS (Caddy)      | API REST `/api/v1/*`                                  |
-| `ws.tchat.site`  | VPS (Caddy)      | WebSocket `/ws`                                       |
+El apex `ortisec.site` está reservado al portafolio; TChat vive completo bajo
+`tchat.ortisec.site` y sus subdominios.
+
+| Dominio                  | Proyecto Vercel  | Contenido                                             |
+| ------------------------ | ---------------- | ----------------------------------------------------- |
+| `tchat.ortisec.site`     | `tchat-www`      | Landing, capturas, enlaces                            |
+| `app.tchat.ortisec.site` | `tchat-account`  | Registro, login, perfil, vinculación del CLI          |
+| `cli.tchat.ortisec.site` | `tchat-download` | Descargas, `install.sh`, `install.ps1`, `latest.json` |
+| `api.tchat.ortisec.site` | VPS (Caddy)      | API REST `/api/v1/*`                                  |
+| `ws.tchat.ortisec.site`  | VPS (Caddy)      | WebSocket `/ws`                                       |
 
 Los binarios **no** se alojan en Vercel: viven en GitHub Releases y la página de descargas
 enlaza a los assets y sirve los scripts de instalación.
@@ -138,7 +141,7 @@ Runbooks: `docs/runbooks/deploy.md` y `docs/runbooks/backup-restore.md`.
    `expires_in` e `interval`.
    - `user_code`: 8 caracteres que el usuario ve en la web y en el terminal.
    - `device_code`: secreto que solo conserva el CLI; el servidor guarda su hash SHA-256.
-2. `tchat login` abre `verification_url` (`app.tchat.site/cli-auth?code=USER_CODE`).
+2. `tchat login` abre `verification_url` (`app.tchat.ortisec.site/cli-auth?code=USER_CODE`).
 3. El usuario inicia sesión y pulsa «Autorizar terminal»: `POST /api/v1/auth/device/approve`
    con su ID token de Firebase y el `user_code`.
 4. El CLI hace polling a `POST /api/v1/auth/device/token` con el `device_code` y puede recibir
@@ -152,7 +155,7 @@ keyring del sistema operativo.
 
 ### WebSocket
 
-- URL: `wss://ws.tchat.site/ws`
+- URL: `wss://ws.tchat.ortisec.site/ws`
 - Handshake: `Authorization: Bearer <token>`. Acepta el JWT del CLI y los ID tokens de Firebase.
 - Cliente → servidor: `ping`, `message.send`, `message.read`, `typing.start`, `typing.stop`.
 - Servidor → cliente: `pong`, `message.new`, `message.ack`, `presence.update`, `typing.update`,
@@ -179,7 +182,7 @@ keyring del sistema operativo.
 - `cargo-dist` vive en `apps/cli` y publica al empujar un tag `tchat-cli-v*`.
 - Targets: Windows x86_64 (zip + MSI), macOS Intel y Apple Silicon, Linux x86_64 glibc y musl.
 - Instaladores `install.sh` / `install.ps1`, checksums SHA-256 y `latest.json`.
-- `cli.tchat.site` sirve los instaladores y los metadatos mediante rewrites de Vercel hacia
+- `cli.tchat.ortisec.site` sirve los instaladores y los metadatos mediante rewrites de Vercel hacia
   GitHub Releases: los binarios no pasan por Vercel.
 - La página de descargas lee `/latest.json` para mostrar versión y enlaces reales.
 

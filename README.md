@@ -12,15 +12,17 @@ contra FastAPI + PostgreSQL en el VPS, con WebSocket para mensajería y presenci
 
 ## Superficies del producto
 
-| Superficie                | Carpeta                          | Dominio                            | Despliegue       |
-| ------------------------- | -------------------------------- | ---------------------------------- | ---------------- |
-| Landing pública           | `apps/www`                       | `tchat.site`                       | Vercel           |
-| Registro / login / perfil | `apps/account`                   | `app.tchat.site`                   | Vercel           |
-| Descargas e instaladores  | `apps/download`                  | `cli.tchat.site`                   | Vercel           |
-| Cliente de terminal       | `apps/cli`                       | —                                  | GitHub Releases  |
-| API REST + WebSocket      | `services/api`                   | `api.tchat.site` / `ws.tchat.site` | VPS (Docker)     |
-| Base de datos             | `services/api` + `infra/compose` | —                                  | VPS (Docker)     |
-| Autenticación             | Firebase Auth                    | —                                  | Google (externo) |
+| Superficie                | Carpeta                          | Dominio                                            | Despliegue       |
+| ------------------------- | -------------------------------- | -------------------------------------------------- | ---------------- |
+| Landing pública           | `apps/www`                       | `tchat.ortisec.site`                               | Vercel           |
+| Registro / login / perfil | `apps/account`                   | `app.tchat.ortisec.site`                           | Vercel           |
+| Descargas e instaladores  | `apps/download`                  | `cli.tchat.ortisec.site`                           | Vercel           |
+| Cliente de terminal       | `apps/cli`                       | —                                                  | GitHub Releases  |
+| API REST + WebSocket      | `services/api`                   | `api.tchat.ortisec.site` / `ws.tchat.ortisec.site` | VPS (Docker)     |
+| Base de datos             | `services/api` + `infra/compose` | —                                                  | VPS (Docker)     |
+| Autenticación             | Firebase Auth                    | —                                                  | Google (externo) |
+
+El apex `ortisec.site` pertenece al portafolio; TChat vive completo bajo `tchat.ortisec.site`.
 
 ## Estructura del repositorio
 

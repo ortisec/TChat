@@ -11,9 +11,9 @@ body:
     attributes:
       label: Superficie
       options:
-        - Web (tchat.site)
-        - Cuenta (app.tchat.site)
-        - Descargas (cli.tchat.site)
+        - Web (tchat.ortisec.site)
+        - Cuenta (app.tchat.ortisec.site)
+        - Descargas (cli.tchat.ortisec.site)
         - Cliente de terminal
         - API
         - Otro

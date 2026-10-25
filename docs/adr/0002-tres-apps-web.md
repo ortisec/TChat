@@ -5,8 +5,8 @@
 
 ## Contexto
 
-La arquitectura define tres subdominios con propósitos distintos: `tchat.site` (landing),
-`app.tchat.site` (registro, login y perfil) y `cli.tchat.site` (descargas). Se evaluó un único
+La arquitectura define tres subdominios con propósitos distintos: `tchat.ortisec.site` (landing),
+`app.tchat.ortisec.site` (registro, login y perfil) y `cli.tchat.ortisec.site` (descargas). Se evaluó un único
 proyecto Astro con reescrituras por host frente a tres proyectos separados.
 
 ## Decisión

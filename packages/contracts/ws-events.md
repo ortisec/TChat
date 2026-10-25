@@ -2,7 +2,7 @@
 
 Implementado en `services/api/src/tchat_api/realtime/`.
 
-- URL: `wss://ws.tchat.site/ws`
+- URL: `wss://ws.tchat.ortisec.site/ws`
 - Autenticación: cabecera `Authorization: Bearer <token>` en el handshake. Acepta el access token
   del CLI y los ID tokens de Firebase.
 - Formato: JSON con un sobre común.

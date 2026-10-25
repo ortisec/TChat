@@ -1,6 +1,6 @@
 # apps/download — descargas
 
-Proyecto Astro + React para **`cli.tchat.site`**.
+Proyecto Astro + React para **`cli.tchat.ortisec.site`**.
 
 - Detecta el sistema operativo del visitante en el navegador.
 - Lee `/latest.json` para ofrecer los artefactos de la última release, agrupados por plataforma.

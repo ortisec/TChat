@@ -1,6 +1,6 @@
 # apps/account — identidad
 
-Proyecto Astro + React para **`app.tchat.site`**.
+Proyecto Astro + React para **`app.tchat.ortisec.site`**.
 
 ## Páginas
 

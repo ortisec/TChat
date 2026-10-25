@@ -43,19 +43,19 @@ Duración típica: 10–15 minutos.
 ```bash
 gh release view tchat-cli-v0.1.0
 
-curl -fsS https://cli.tchat.site/latest.json | jq .
-curl -fsS https://cli.tchat.site/install.sh | sh
+curl -fsS https://cli.tchat.ortisec.site/latest.json | jq .
+curl -fsS https://cli.tchat.ortisec.site/install.sh | sh
 tchat --version
 ```
 
 En Windows:
 
 ```powershell
-irm https://cli.tchat.site/install.ps1 | iex
+irm https://cli.tchat.ortisec.site/install.ps1 | iex
 tchat --version
 ```
 
-Comprueba también que los enlaces de `https://cli.tchat.site` muestran la versión nueva y que el
+Comprueba también que los enlaces de `https://cli.tchat.ortisec.site` muestran la versión nueva y que el
 CLI sigue autenticando.
 
 ## Rollback

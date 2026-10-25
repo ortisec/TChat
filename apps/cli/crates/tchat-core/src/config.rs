@@ -98,9 +98,14 @@ mod tests {
 
     #[test]
     fn deriva_wss_desde_https() {
-        let config = Config::build("https://api.tchat.site", None, "https://tchat.site").unwrap();
+        let config = Config::build(
+            "https://api.tchat.ortisec.site",
+            None,
+            "https://tchat.ortisec.site",
+        )
+        .unwrap();
 
-        assert_eq!(config.ws_url.as_str(), "wss://api.tchat.site/ws");
+        assert_eq!(config.ws_url.as_str(), "wss://api.tchat.ortisec.site/ws");
     }
 
     #[test]

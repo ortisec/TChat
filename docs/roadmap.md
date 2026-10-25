@@ -74,7 +74,7 @@ tareas de activación en producción (VPS, DNS, primer tag y claves de Firebase)
    apps. Copiar `apiKey` y `appId` a `apps/account/.env` y a las variables de Vercel.
 3. Crear tres proyectos en Vercel apuntando al mismo repo, cada uno con su _Root Directory_
    (`apps/www`, `apps/account`, `apps/download`).
-4. Asignar dominios: `tchat.site`, `app.tchat.site`, `cli.tchat.site`.
+4. Asignar dominios: `tchat.ortisec.site`, `app.tchat.ortisec.site`, `cli.tchat.ortisec.site`.
 5. Añadir esos dominios en Firebase → Authentication → Settings → Authorized domains.
 6. Pegar las variables `PUBLIC_*` en cada proyecto de Vercel.
 
@@ -144,7 +144,7 @@ tests de estado y protocolo; falta la validación visual interactiva.
 **Tu parte**
 
 1. Contratar el VPS (Ubuntu 24.04 con Docker) y darme IP y usuario SSH.
-2. Apuntar los DNS `api.tchat.site` y `ws.tchat.site` al VPS y abrir solo 22/80/443.
+2. Apuntar los DNS `api.tchat.ortisec.site` y `ws.tchat.ortisec.site` al VPS y abrir solo 22/80/443.
 3. Crear el Environment `production` en GitHub con `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` y,
    si no usas el puerto 22, `VPS_PORT`.
 4. Copiar `infra/compose/.env.example` a `/opt/tchat/infra/compose/.env` en el VPS y rellenar
@@ -152,7 +152,7 @@ tests de estado y protocolo; falta la validación visual interactiva.
 5. Opcional: la service account de Firebase solo hace falta si añadimos operaciones
    administrativas; la verificación de tokens no la necesita.
 
-**Criterio de hecho:** `https://api.tchat.site/health` responde y el CLI funciona contra producción.
+**Criterio de hecho:** `https://api.tchat.ortisec.site/health` responde y el CLI funciona contra producción.
 Verificado en local: imagen Docker, pila completa contra PostgreSQL, `alembic check` dentro del
 contenedor, compose de producción y Caddyfile validados. Falta ejecutarlo en tu VPS.
 
@@ -165,7 +165,7 @@ contenedor, compose de producción y Caddyfile validados. Falta ejecutarlo en tu
 - `cargo-dist` configurado: `.msi`, `.zip`/`.tar.xz`, checksums e instaladores shell/PowerShell.
 - Workflow de release por tag `tchat-cli-v*` para Windows, Linux (glibc y musl) y macOS
   (x86_64 y arm64).
-- `latest.json`, `install.sh` e `install.ps1` accesibles desde `cli.tchat.site` (rewrites a GitHub).
+- `latest.json`, `install.sh` e `install.ps1` accesibles desde `cli.tchat.ortisec.site` (rewrites a GitHub).
 - Página de descargas que lee la última release y enlaza al artefacto de cada plataforma.
 - CI/CD completo documentado en `docs/runbooks/`.
 
@@ -174,7 +174,7 @@ contenedor, compose de producción y Caddyfile validados. Falta ejecutarlo en tu
 1. Probar la instalación en una máquina limpia de Windows (`install.ps1`).
 2. Revisar que los binarios de macOS/Linux arrancan (o pasármelo para probar en CI).
 3. Publicar el primer tag: `tchat-cli-v0.1.0`.
-4. Confirmar que `https://cli.tchat.site/latest.json` devuelve la versión y que los botones de
+4. Confirmar que `https://cli.tchat.ortisec.site/latest.json` devuelve la versión y que los botones de
    descarga apuntan a los assets correctos.
 
 **Criterio de hecho:** un usuario nuevo instala con un comando, ejecuta `tchat login` y chatea.
