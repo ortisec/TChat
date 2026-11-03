@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use uuid::Uuid;
 
-use crate::models::Message;
+use crate::models::{Friendship, Message, User};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outgoing {
@@ -90,6 +90,21 @@ pub enum Decoded {
         user_id: Uuid,
         active: bool,
     },
+    FriendRequestReceived {
+        user: User,
+    },
+    FriendRequestAccepted {
+        user: User,
+    },
+    FriendRequestRejected {
+        user: User,
+    },
+    FriendRequestCancelled {
+        user_id: Uuid,
+    },
+    FriendRemoved {
+        user_id: Uuid,
+    },
     Error {
         code: String,
         message: String,
@@ -122,6 +137,16 @@ struct ErrorPayload {
     message: String,
 }
 
+#[derive(Deserialize)]
+struct FriendRequestPayload {
+    request: Friendship,
+}
+
+#[derive(Deserialize)]
+struct UserIdPayload {
+    user_id: Uuid,
+}
+
 impl Incoming {
     pub fn parse(text: &str) -> Option<Self> {
         serde_json::from_str(text).ok()
@@ -144,6 +169,39 @@ impl Incoming {
                     conversation_id: payload.conversation_id,
                     user_id: payload.user_id,
                     active: payload.active,
+                })
+                .unwrap_or(Decoded::Unknown),
+            "friend.request.received" => {
+                serde_json::from_value::<FriendRequestPayload>(self.payload.clone())
+                    .map(|payload| Decoded::FriendRequestReceived {
+                        user: payload.request.user,
+                    })
+                    .unwrap_or(Decoded::Unknown)
+            }
+            "friend.request.accepted" => {
+                serde_json::from_value::<FriendRequestPayload>(self.payload.clone())
+                    .map(|payload| Decoded::FriendRequestAccepted {
+                        user: payload.request.user,
+                    })
+                    .unwrap_or(Decoded::Unknown)
+            }
+            "friend.request.rejected" => {
+                serde_json::from_value::<FriendRequestPayload>(self.payload.clone())
+                    .map(|payload| Decoded::FriendRequestRejected {
+                        user: payload.request.user,
+                    })
+                    .unwrap_or(Decoded::Unknown)
+            }
+            "friend.request.cancelled" => {
+                serde_json::from_value::<UserIdPayload>(self.payload.clone())
+                    .map(|payload| Decoded::FriendRequestCancelled {
+                        user_id: payload.user_id,
+                    })
+                    .unwrap_or(Decoded::Unknown)
+            }
+            "friend.removed" => serde_json::from_value::<UserIdPayload>(self.payload.clone())
+                .map(|payload| Decoded::FriendRemoved {
+                    user_id: payload.user_id,
                 })
                 .unwrap_or(Decoded::Unknown),
             "error" => serde_json::from_value::<ErrorPayload>(self.payload.clone())

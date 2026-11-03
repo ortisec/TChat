@@ -14,7 +14,9 @@ use uuid::Uuid;
 
 use crate::config::Config;
 use crate::error::{Error, Result};
-use crate::models::{Conversation, DeviceStart, Message, TokenResponse, User};
+use crate::models::{
+    Conversation, DeviceStart, FriendRequests, Friendship, Message, TokenResponse, User,
+};
 use crate::store::TokenStore;
 
 pub type WsSink = futures_util::stream::SplitSink<
@@ -134,6 +136,39 @@ impl Client {
         self.get(&path).await
     }
 
+    pub async fn friends(&self) -> Result<Vec<User>> {
+        self.get("/api/v1/friends").await
+    }
+
+    pub async fn friend_requests(&self) -> Result<FriendRequests> {
+        self.get("/api/v1/friends/requests").await
+    }
+
+    pub async fn send_friend_request(&self, username: &str) -> Result<Friendship> {
+        self.post("/api/v1/friends/requests", &json!({ "username": username }))
+            .await
+    }
+
+    pub async fn accept_friend_request(&self, friendship_id: Uuid) -> Result<Friendship> {
+        let path = format!("/api/v1/friends/requests/{friendship_id}/accept");
+        self.post(&path, &json!({})).await
+    }
+
+    pub async fn reject_friend_request(&self, friendship_id: Uuid) -> Result<Friendship> {
+        let path = format!("/api/v1/friends/requests/{friendship_id}/reject");
+        self.post(&path, &json!({})).await
+    }
+
+    pub async fn cancel_friend_request(&self, friendship_id: Uuid) -> Result<()> {
+        let path = format!("/api/v1/friends/requests/{friendship_id}");
+        self.delete(&path).await
+    }
+
+    pub async fn remove_friend(&self, user_id: Uuid) -> Result<()> {
+        let path = format!("/api/v1/friends/{user_id}");
+        self.delete(&path).await
+    }
+
     /// Crea (o recupera) la conversación directa con otro usuario.
     pub async fn open_direct(&self, user_id: Uuid) -> Result<Conversation> {
         let access_token = self.access_token().await?;
@@ -243,6 +278,47 @@ impl Client {
             .send()
             .await?;
         parse_response(response).await
+    }
+
+    async fn post<T: DeserializeOwned>(&self, path: &str, body: &Value) -> Result<T> {
+        let access_token = self.access_token().await?;
+        let response = self
+            .http
+            .post(self.config.endpoint(path))
+            .bearer_auth(access_token)
+            .json(body)
+            .send()
+            .await?;
+        parse_response(response).await
+    }
+
+    /// Petición que no espera cuerpo en la respuesta (204 No Content).
+    async fn delete(&self, path: &str) -> Result<()> {
+        let access_token = self.access_token().await?;
+        let response = self
+            .http
+            .delete(self.config.endpoint(path))
+            .bearer_auth(access_token)
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            return Ok(());
+        }
+        let status = response.status();
+        let text = response.text().await.unwrap_or_default();
+        let message = serde_json::from_str::<Value>(&text)
+            .ok()
+            .and_then(|value| value.get("detail").cloned())
+            .map(|detail| match detail {
+                Value::String(text) => text,
+                other => other.to_string(),
+            })
+            .unwrap_or_else(|| text.trim().to_string());
+        Err(Error::Api {
+            status: status.as_u16(),
+            message,
+        })
     }
 }
 

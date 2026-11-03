@@ -8,7 +8,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use ratatui::crossterm::event::{Event, KeyEventKind};
-use tchat_core::{Client, Conversation, Incoming, User, protocol, ws_text};
+use tchat_core::{Client, Conversation, Error, Incoming, User, protocol, ws_text};
 use tokio::sync::mpsc;
 use tokio::time::Instant;
 use tokio_tungstenite::tungstenite::Message;
@@ -27,6 +27,8 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
     let (events_tx, mut events_rx) = mpsc::unbounded_channel::<UiEvent>();
     let (key_tx, mut key_rx) = mpsc::unbounded_channel::<Event>();
 
+    load_friends(&client, &mut app).await;
+
     std::thread::spawn(move || {
         while let Ok(event) = ratatui::crossterm::event::read() {
             if key_tx.send(event).is_err() {
@@ -36,13 +38,20 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
     });
 
     let mut generation = 1u64;
-    let mut ws_tx = Some(
-        connect(&client, events_tx.clone(), generation)
-            .await
-            .context("no se pudo abrir el WebSocket")?,
-    );
-    app.connected = true;
-    app.set_status("conectado");
+    let mut next_reconnect: Option<Instant> = None;
+    let mut ws_tx = match connect(&client, events_tx.clone(), generation).await {
+        Ok(tx) => {
+            app.connected = true;
+            app.set_status("conectado");
+            Some(tx)
+        }
+        Err(error) => {
+            app.connected = false;
+            app.set_status(format!("sin conexión: {error}"));
+            next_reconnect = Some(Instant::now() + Duration::from_secs(3));
+            None
+        }
+    };
 
     if let Some(conversation_id) = app.selected_id() {
         load_messages(&client, &mut app, conversation_id).await;
@@ -52,7 +61,6 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
     let mut terminal = ratatui::try_init().context("no se pudo iniciar la terminal")?;
     let mut ticker = tokio::time::interval(Duration::from_millis(250));
     let mut last_ping = Instant::now();
-    let mut next_reconnect: Option<Instant> = None;
 
     let outcome = loop {
         if let Err(error) = terminal.draw(|frame| ui::draw(frame, &app)) {
@@ -78,6 +86,23 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
                         app.clear_unread(conversation_id);
                         mark_read(&mut app, conversation_id, ws_tx.as_ref());
                     }
+                    KeyOutcome::SendFriendRequest => {
+                        if let Some(username) = app.take_friend_input() {
+                            send_friend_request(&client, &mut app, username).await;
+                        }
+                    }
+                    KeyOutcome::AcceptFriend(friendship_id) => {
+                        accept_friend(&client, &mut app, friendship_id).await;
+                    }
+                    KeyOutcome::RejectFriend(friendship_id) => {
+                        reject_friend(&client, &mut app, friendship_id).await;
+                    }
+                    KeyOutcome::CancelFriend(friendship_id) => {
+                        cancel_friend(&client, &mut app, friendship_id).await;
+                    }
+                    KeyOutcome::RemoveFriend(user_id) => {
+                        remove_friend(&client, &mut app, user_id).await;
+                    }
                     KeyOutcome::None => {}
                 }
             }
@@ -98,6 +123,9 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
                                     Ok(conversations) => app.set_conversations(conversations),
                                     Err(error) => app.set_status(format!("no se pudo recargar: {error}")),
                                 }
+                            }
+                            Effect::ReloadFriends => {
+                                reload_friends(&client, &mut app).await;
                             }
                             Effect::None => {}
                         }
@@ -234,5 +262,88 @@ fn send_input(app: &mut App, ws_tx: Option<&mpsc::UnboundedSender<String>>) {
     } else {
         app.set_input(text);
         app.set_status("sin conexión; reintentando…");
+    }
+}
+
+async fn load_friends(client: &Client, app: &mut App) {
+    match client.friends().await {
+        Ok(friends) => match client.friend_requests().await {
+            Ok(requests) => app.set_friends(friends, requests),
+            Err(error) => app.set_status(format!("no se pudo cargar solicitudes: {error}")),
+        },
+        Err(error) => app.set_status(format!("no se pudo cargar amigos: {error}")),
+    }
+}
+
+async fn reload_friends(client: &Client, app: &mut App) {
+    load_friends(client, app).await;
+}
+
+fn friend_error(code: &str, username: &str) -> String {
+    match code {
+        "already_friends" => format!("ya eres amigo de @{username}"),
+        "request_pending" => format!("ya hay una solicitud pendiente con @{username}"),
+        "cannot_friend_yourself" => "no puedes agregarte a ti mismo".to_string(),
+        "user_not_found" => format!("no existe el usuario @{username}"),
+        other => format!("no se pudo enviar la solicitud: {other}"),
+    }
+}
+
+async fn send_friend_request(client: &Client, app: &mut App, username: String) {
+    match client.send_friend_request(&username).await {
+        Ok(_) => {
+            app.set_status(format!("solicitud enviada a @{username}"));
+            reload_friends(client, app).await;
+        }
+        Err(Error::Api { message, .. }) => app.set_status(friend_error(&message, &username)),
+        Err(error) => app.set_status(format!("no se pudo enviar: {error}")),
+    }
+}
+
+async fn accept_friend(client: &Client, app: &mut App, friendship_id: Uuid) {
+    match client.accept_friend_request(friendship_id).await {
+        Ok(_) => {
+            app.set_status("solicitud aceptada");
+            reload_friends(client, app).await;
+        }
+        Err(Error::Api { message, .. }) => app.set_status(format!("no se pudo aceptar: {message}")),
+        Err(error) => app.set_status(format!("no se pudo aceptar: {error}")),
+    }
+}
+
+async fn reject_friend(client: &Client, app: &mut App, friendship_id: Uuid) {
+    match client.reject_friend_request(friendship_id).await {
+        Ok(_) => {
+            app.set_status("solicitud rechazada");
+            reload_friends(client, app).await;
+        }
+        Err(Error::Api { message, .. }) => {
+            app.set_status(format!("no se pudo rechazar: {message}"))
+        }
+        Err(error) => app.set_status(format!("no se pudo rechazar: {error}")),
+    }
+}
+
+async fn cancel_friend(client: &Client, app: &mut App, friendship_id: Uuid) {
+    match client.cancel_friend_request(friendship_id).await {
+        Ok(()) => {
+            app.set_status("solicitud cancelada");
+            reload_friends(client, app).await;
+        }
+        Err(Error::Api { message, .. }) => {
+            app.set_status(format!("no se pudo cancelar: {message}"))
+        }
+        Err(error) => app.set_status(format!("no se pudo cancelar: {error}")),
+    }
+}
+
+async fn remove_friend(client: &Client, app: &mut App, user_id: Uuid) {
+    match client.remove_friend(user_id).await {
+        Ok(()) => {
+            app.set_status("amigo eliminado");
+            reload_friends(client, app).await;
+        }
+        Err(Error::Api { message, .. }) => app.set_status(format!("no se pudo quitar: {message}")),
+        Err(error) => app.set_status(format!("no se pudo quitar: {error}")),
     }
 }

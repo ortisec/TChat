@@ -5,16 +5,18 @@ use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Wrap},
 };
 use tchat_core::{Conversation, Message};
 use uuid::Uuid;
 
-use crate::app::App;
+use crate::app::{App, FriendEntry, FriendFocus, Tab};
 
 pub fn draw(frame: &mut Frame, app: &App) {
+    let notice_height = if app.notification.is_some() { 1 } else { 0 };
     let areas = Layout::vertical([
         Constraint::Length(1),
+        Constraint::Length(notice_height),
         Constraint::Min(3),
         Constraint::Length(3),
         Constraint::Length(1),
@@ -22,13 +24,10 @@ pub fn draw(frame: &mut Frame, app: &App) {
     .split(frame.area());
 
     draw_header(frame, app, areas[0]);
-
-    let body = Layout::horizontal([Constraint::Percentage(32), Constraint::Percentage(68)])
-        .split(areas[1]);
-    draw_conversations(frame, app, body[0]);
-    draw_messages(frame, app, body[1]);
-    draw_input(frame, app, areas[2]);
-    draw_footer(frame, app, areas[3]);
+    draw_notice(frame, app, areas[1]);
+    draw_body(frame, app, areas[2]);
+    draw_input(frame, app, areas[3]);
+    draw_footer(frame, app, areas[4]);
 }
 
 fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
@@ -36,6 +35,10 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
         "conectado"
     } else {
         "sin conexión"
+    };
+    let tab = match app.tab {
+        Tab::Chats => "Conversaciones",
+        Tab::Friends => "Amigos",
     };
 
     let line = Line::from(vec![
@@ -50,9 +53,39 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
             format!("  @{}  ·  {state} ", app.me.username),
             Style::default().fg(Color::Gray),
         ),
+        Span::styled(format!(" · [Tab] {tab} "), Style::default().fg(Color::Cyan)),
     ]);
 
     frame.render_widget(Paragraph::new(line), area);
+}
+
+fn draw_notice(frame: &mut Frame, app: &App, area: Rect) {
+    let Some(notification) = app.notification.as_deref() else {
+        return;
+    };
+
+    let line = Line::from(Span::styled(
+        format!(" ⚠ {notification}"),
+        Style::default()
+            .fg(Color::Black)
+            .bg(Color::Yellow)
+            .add_modifier(Modifier::BOLD),
+    ));
+    frame.render_widget(Paragraph::new(line), area);
+}
+
+fn draw_body(frame: &mut Frame, app: &App, area: Rect) {
+    match app.tab {
+        Tab::Chats => draw_chats(frame, app, area),
+        Tab::Friends => draw_friends(frame, app, area),
+    }
+}
+
+fn draw_chats(frame: &mut Frame, app: &App, area: Rect) {
+    let body =
+        Layout::horizontal([Constraint::Percentage(32), Constraint::Percentage(68)]).split(area);
+    draw_conversations(frame, app, body[0]);
+    draw_messages(frame, app, body[1]);
 }
 
 fn draw_conversations(frame: &mut Frame, app: &App, area: Rect) {
@@ -91,7 +124,7 @@ fn draw_messages(frame: &mut Frame, app: &App, area: Rect) {
 
     let Some(conversation_id) = app.selected_id() else {
         frame.render_widget(
-            Paragraph::new("Sin conversaciones. Crea una desde la web.")
+            Paragraph::new("Sin conversaciones. Añade amigos y usa `tchat open @usuario`.")
                 .style(Style::default().fg(Color::DarkGray))
                 .block(block),
             area,
@@ -135,7 +168,132 @@ fn draw_messages(frame: &mut Frame, app: &App, area: Rect) {
     frame.render_widget(Paragraph::new(visible).block(block), area);
 }
 
+fn draw_friends(frame: &mut Frame, app: &App, area: Rect) {
+    let body =
+        Layout::horizontal([Constraint::Percentage(40), Constraint::Percentage(60)]).split(area);
+    draw_friends_list(frame, app, body[0]);
+    draw_friends_detail(frame, app, body[1]);
+}
+
+fn draw_friends_list(frame: &mut Frame, app: &App, area: Rect) {
+    let width = area.width.saturating_sub(2) as usize;
+    let entries = app.friend_entries();
+
+    let items: Vec<ListItem> = entries
+        .iter()
+        .map(|entry| ListItem::new(friend_label(entry, width)))
+        .collect();
+
+    let list = List::new(items)
+        .block(block(" Amigos "))
+        .highlight_style(Style::default().bg(Color::DarkGray).fg(Color::White));
+
+    let mut state = ListState::default();
+    if !entries.is_empty() {
+        state.select(Some(app.friend_selected));
+    }
+
+    frame.render_stateful_widget(list, area, &mut state);
+}
+
+fn draw_friends_detail(frame: &mut Frame, app: &App, area: Rect) {
+    let block = block(" Detalle ");
+
+    let mut lines: Vec<Line> = vec![
+        Line::from("↑↓ seleccionar · / escribir usuario · Tab volver"),
+        Line::from(""),
+    ];
+
+    match app.selected_entry() {
+        Some(FriendEntry::Friend(user)) => {
+            lines.push(Line::from(vec![
+                Span::styled("@", Style::default().fg(Color::Cyan)),
+                Span::styled(user.username.clone(), Style::default().fg(Color::White)),
+                Span::styled("  ·  ya son amigos", Style::default().fg(Color::Green)),
+            ]));
+            lines.push(Line::from(""));
+            lines.push(Line::styled(
+                "Pulsa x para quitar a este amigo de la lista.",
+                Style::default().fg(Color::Gray),
+            ));
+        }
+        Some(FriendEntry::Incoming(friendship)) => {
+            lines.push(Line::from(vec![
+                Span::styled("@", Style::default().fg(Color::Cyan)),
+                Span::styled(
+                    friendship.user.username.clone(),
+                    Style::default().fg(Color::White),
+                ),
+                Span::styled(
+                    "  ·  te envió una solicitud",
+                    Style::default().fg(Color::Yellow),
+                ),
+            ]));
+            lines.push(Line::from(""));
+            lines.push(Line::styled(
+                "Enter aceptar · r rechazar",
+                Style::default().fg(Color::Gray),
+            ));
+        }
+        Some(FriendEntry::Outgoing(friendship)) => {
+            lines.push(Line::from(vec![
+                Span::styled("@", Style::default().fg(Color::Cyan)),
+                Span::styled(
+                    friendship.user.username.clone(),
+                    Style::default().fg(Color::White),
+                ),
+                Span::styled(
+                    "  ·  solicitud pendiente",
+                    Style::default().fg(Color::Yellow),
+                ),
+            ]));
+            lines.push(Line::from(""));
+            lines.push(Line::styled(
+                "Enter o c para cancelar la solicitud",
+                Style::default().fg(Color::Gray),
+            ));
+        }
+        None => {
+            lines.push(Line::styled(
+                "Aún no tienes amigos ni solicitudes.",
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+    }
+
+    lines.push(Line::from(""));
+    lines.push(Line::from(""));
+    lines.push(Line::styled(
+        "Cómo agregar amigos",
+        Style::default().add_modifier(Modifier::BOLD),
+    ));
+    lines.push(Line::from(vec![
+        Span::raw("Pulsa "),
+        Span::styled("/", Style::default().fg(Color::Cyan)),
+        Span::raw(", escribe el "),
+        Span::styled("nombre de usuario", Style::default().fg(Color::White)),
+        Span::raw(" y pulsa "),
+        Span::styled("Enter", Style::default().fg(Color::Cyan)),
+        Span::raw(" para enviar la solicitud."),
+    ]));
+    lines.push(Line::from(
+        "Si la otra persona te envió una solicitud primero, verás “aceptar o rechazar”.",
+    ));
+
+    frame.render_widget(
+        Paragraph::new(lines).wrap(Wrap { trim: true }).block(block),
+        area,
+    );
+}
+
 fn draw_input(frame: &mut Frame, app: &App, area: Rect) {
+    match app.tab {
+        Tab::Chats => draw_chat_input(frame, app, area),
+        Tab::Friends => draw_friend_input(frame, app, area),
+    }
+}
+
+fn draw_chat_input(frame: &mut Frame, app: &App, area: Rect) {
     let width = area.width.saturating_sub(4) as usize;
     let text = format!("> {}▌", tail(&app.input, width));
 
@@ -147,8 +305,32 @@ fn draw_input(frame: &mut Frame, app: &App, area: Rect) {
     );
 }
 
+fn draw_friend_input(frame: &mut Frame, app: &App, area: Rect) {
+    let width = area.width.saturating_sub(4) as usize;
+    let text = if app.friend_focus == FriendFocus::Input {
+        format!("> {}▌", tail(&app.friend_input, width))
+    } else {
+        format!(
+            "> {} (pulsa / para escribir)",
+            tail(&app.friend_input, width)
+        )
+    };
+
+    frame.render_widget(
+        Paragraph::new(text)
+            .style(Style::default().fg(Color::White))
+            .block(block(" Agregar amigo (usuario) ")),
+        area,
+    );
+}
+
 fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
-    let hints = "Enter envía · ↑↓ conversación · PgUp/PgDn historial · Ctrl+C sale";
+    let hints = match app.tab {
+        Tab::Chats => {
+            "Enter envía · ↑↓ conversación · PgUp/PgDn historial · Tab amigos · Ctrl+C sale"
+        }
+        Tab::Friends => "Enter/letras actúan · ↑↓ amigo · / agrega · Tab chats · Ctrl+C sale",
+    };
     let text = format!(" {hints}  ·  {}", app.status);
 
     frame.render_widget(
@@ -156,6 +338,15 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
             .style(Style::default().fg(Color::DarkGray)),
         area,
     );
+}
+
+fn friend_label(entry: &FriendEntry, width: usize) -> String {
+    let (marker, username) = match entry {
+        FriendEntry::Friend(user) => ("●", user.username.as_str()),
+        FriendEntry::Incoming(friendship) => ("↓", friendship.user.username.as_str()),
+        FriendEntry::Outgoing(friendship) => ("↑", friendship.user.username.as_str()),
+    };
+    truncate(&format!("{marker} @{username}"), width)
 }
 
 fn block(title: impl Into<String>) -> Block<'static> {

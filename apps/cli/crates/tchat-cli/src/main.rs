@@ -78,7 +78,10 @@ async fn login(config: Config, open_browser: bool) -> Result<()> {
         println!("  Esperando autorización…");
     })
     .await
-    .context("no se pudo completar el login")?;
+    .context(format!(
+        "no se pudo completar el login contra {}; verifica que la API esté corriendo (`just api`)",
+        config.api_url
+    ))?;
 
     let me = client.me().await?;
     println!();

@@ -46,7 +46,16 @@ Implementado en `services/api/src/tchat_api/realtime/`.
 | `message.ack`     | `client_id`, `message_id`, `created_at`               | Confirmación de envío      |
 | `presence.update` | `user_id`, `status` (`online` / `offline`)            | Presencia de un usuario    |
 | `typing.update`   | `conversation_id`, `user_id`, `active`                | Actividad de escritura     |
+| `friend.request.received`  | `request` (`FriendshipPublic`)            | Recibiste una solicitud de amistad |
+| `friend.request.accepted`  | `request` (`FriendshipPublic`)            | Aceptaron tu solicitud             |
+| `friend.request.rejected`  | `request` (`FriendshipPublic`)            | Rechazaron tu solicitud            |
+| `friend.request.cancelled` | `request_id`, `user_id`                    | Cancelaron una solicitud que te enviaron |
+| `friend.removed`           | `user_id`                                  | Te eliminaron de su lista de amigos      |
 | `error`           | `code`, `message`, `ref`                              | Error asociado a un evento |
+
+En los eventos `friend.request.*`, el `request` usa el mismo esquema que `FriendshipPublic` de REST,
+donde `request.user` es siempre la otra persona: quien envía (en `received`) o quien responde
+(en `accepted`/`rejected`).
 
 ## Errores
 

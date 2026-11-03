@@ -70,6 +70,21 @@ pub struct TokenResponse {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct Friendship {
+    pub id: Uuid,
+    pub status: String,
+    pub created_at: DateTime<Utc>,
+    pub responded_at: Option<DateTime<Utc>>,
+    pub user: User,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FriendRequests {
+    pub incoming: Vec<Friendship>,
+    pub outgoing: Vec<Friendship>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct DeviceStart {
     pub user_code: String,
     pub device_code: String,

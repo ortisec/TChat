@@ -633,6 +633,47 @@
         }
       }
     },
+    "/api/v1/friends/requests/{friendship_id}": {
+      "delete": {
+        "tags": [
+          "amistades"
+        ],
+        "summary": "Cancela una solicitud saliente",
+        "operationId": "cancel_request_api_v1_friends_requests__friendship_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "friendship_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Friendship Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/friends/{user_id}": {
       "delete": {
         "tags": [

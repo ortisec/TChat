@@ -1,8 +1,19 @@
 """Amistades."""
 
+import uuid
+
 from httpx import AsyncClient
 
+from tchat_api.realtime.manager import manager
 from tests.helpers import befriend, register
+
+
+class FakeSocket:
+    def __init__(self) -> None:
+        self.messages: list[str] = []
+
+    async def send_text(self, message: str) -> None:
+        self.messages.append(message)
 
 
 async def test_friend_request_and_accept(client: AsyncClient, act_as) -> None:
@@ -95,3 +106,77 @@ async def test_reject_and_remove(client: AsyncClient, act_as) -> None:
     again = await client.post("/api/v1/friends/requests", json={"username": "ana"})
     assert again.status_code == 201
     assert ana["username"] == "ana"
+
+
+async def test_cancel_request(client: AsyncClient, act_as) -> None:
+    await register(client, act_as, "ana", name="Ana")
+    await register(client, act_as, "bruno", name="Bruno")
+
+    act_as("ana")
+    sent = await client.post("/api/v1/friends/requests", json={"username": "bruno"})
+    assert sent.status_code == 201
+    friendship_id = sent.json()["id"]
+
+    act_as("bruno")
+    incoming = await client.get("/api/v1/friends/requests")
+    assert len(incoming.json()["incoming"]) == 1
+
+    act_as("ana")
+    cancelled = await client.delete(f"/api/v1/friends/requests/{friendship_id}")
+    assert cancelled.status_code == 204
+
+    act_as("bruno")
+    after = await client.get("/api/v1/friends/requests")
+    assert after.json()["incoming"] == []
+
+
+async def test_only_requester_can_cancel(client: AsyncClient, act_as) -> None:
+    await register(client, act_as, "ana", name="Ana")
+    await register(client, act_as, "bruno", name="Bruno")
+
+    act_as("ana")
+    sent = await client.post("/api/v1/friends/requests", json={"username": "bruno"})
+    friendship_id = sent.json()["id"]
+
+    act_as("bruno")
+    denied = await client.delete(f"/api/v1/friends/requests/{friendship_id}")
+    assert denied.status_code == 403
+    assert denied.json()["detail"] == "not_your_request"
+
+
+async def test_friend_request_notifies_addressee(client: AsyncClient, act_as) -> None:
+    await register(client, act_as, "ana", name="Ana")
+    bruno = await register(client, act_as, "bruno", name="Bruno")
+
+    socket = FakeSocket()
+    await manager.connect(uuid.UUID(bruno["id"]), socket)  # type: ignore[arg-type]
+    try:
+        act_as("ana")
+        await client.post("/api/v1/friends/requests", json={"username": "bruno"})
+    finally:
+        await manager.disconnect(uuid.UUID(bruno["id"]), socket)  # type: ignore[arg-type]
+
+    assert len(socket.messages) == 1
+    assert '"friend.request.received"' in socket.messages[0]
+    assert '"username": "ana"' in socket.messages[0]
+
+
+async def test_accept_notifies_requester(client: AsyncClient, act_as) -> None:
+    ana = await register(client, act_as, "ana", name="Ana")
+    await register(client, act_as, "bruno", name="Bruno")
+
+    act_as("ana")
+    sent = await client.post("/api/v1/friends/requests", json={"username": "bruno"})
+    friendship_id = sent.json()["id"]
+
+    socket = FakeSocket()
+    await manager.connect(uuid.UUID(ana["id"]), socket)  # type: ignore[arg-type]
+    try:
+        act_as("bruno")
+        await client.post(f"/api/v1/friends/requests/{friendship_id}/accept")
+    finally:
+        await manager.disconnect(uuid.UUID(ana["id"]), socket)  # type: ignore[arg-type]
+
+    assert len(socket.messages) == 1
+    assert '"friend.request.accepted"' in socket.messages[0]
+    assert '"username": "bruno"' in socket.messages[0]

@@ -124,6 +124,22 @@ async def list_requests(
     return incoming, outgoing
 
 
+async def cancel_request(session: AsyncSession, me: User, friendship_id: uuid.UUID) -> uuid.UUID:
+    """Cancela una solicitud saliente pendiente y devuelve el destinatario para notificarle."""
+    friendship = await session.get(Friendship, friendship_id)
+    if friendship is None:
+        raise NotFoundError("friendship_not_found")
+    if friendship.requester_id != me.id:
+        raise ForbiddenError("not_your_request")
+    if friendship.status != FriendshipStatus.PENDING:
+        raise ConflictError("request_already_answered")
+
+    addressee_id = friendship.addressee_id
+    await session.delete(friendship)
+    await session.commit()
+    return addressee_id
+
+
 async def remove_friend(session: AsyncSession, me: User, other_id: uuid.UUID) -> None:
     friendship = await session.scalar(
         select(Friendship).where(

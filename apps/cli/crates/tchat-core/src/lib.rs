@@ -10,6 +10,8 @@ pub mod store;
 pub use client::{Client, WsSink, WsStream, ws_text};
 pub use config::Config;
 pub use error::{Error, Result};
-pub use models::{Conversation, DeviceStart, Message, TokenResponse, User};
+pub use models::{
+    Conversation, DeviceStart, FriendRequests, Friendship, Message, TokenResponse, User,
+};
 pub use protocol::{Decoded, Incoming, Outgoing};
 pub use store::{KeyringStore, MemoryStore, TokenStore};
