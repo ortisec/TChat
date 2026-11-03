@@ -1,6 +1,10 @@
 set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 set dotenv-load := false
 
+# El CLI apunta por defecto a producción (tchat.ortisec.site); aquí forzamos localhost para `just cli`.
+export TCHAT_API_URL := "http://localhost:8000"
+export TCHAT_ACCOUNT_URL := "http://localhost:4322"
+
 # Lista las recetas disponibles
 default:
     @just --list

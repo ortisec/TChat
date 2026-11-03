@@ -4,6 +4,10 @@ use url::Url;
 
 use crate::error::{Error, Result};
 
+/// Hosts de producción. El WebSocket se sirve en un subdominio distinto al de la API REST.
+const PRODUCTION_API_HOST: &str = "api.tchat.ortisec.site";
+const PRODUCTION_WS_HOST: &str = "ws.tchat.ortisec.site";
+
 /// URLs base de la API, el WebSocket y la web de cuentas.
 #[derive(Clone, Debug)]
 pub struct Config {
@@ -27,14 +31,14 @@ impl Config {
         let api = api_override
             .map(str::to_owned)
             .or_else(|| std::env::var("TCHAT_API_URL").ok())
-            .unwrap_or_else(|| "http://localhost:8000".to_string());
+            .unwrap_or_else(|| "https://api.tchat.ortisec.site".to_string());
         let ws = ws_override
             .map(str::to_owned)
             .or_else(|| std::env::var("TCHAT_WS_URL").ok());
         let account = account_override
             .map(str::to_owned)
             .or_else(|| std::env::var("TCHAT_ACCOUNT_URL").ok())
-            .unwrap_or_else(|| "http://localhost:4322".to_string());
+            .unwrap_or_else(|| "https://app.tchat.ortisec.site".to_string());
 
         Self::build(&api, ws.as_deref(), &account)
     }
@@ -79,6 +83,10 @@ fn derive_ws(api: &Url) -> Result<Url> {
     let mut url = api.clone();
     url.set_scheme(scheme)
         .map_err(|_| Error::InvalidScheme(scheme.to_string()))?;
+    // En producción el WebSocket vive en un subdominio propio, no en el de la API REST.
+    if url.host_str() == Some(PRODUCTION_API_HOST) {
+        url.set_host(Some(PRODUCTION_WS_HOST))?;
+    }
     url.set_path("/ws");
     url.set_query(None);
     url.set_fragment(None);
@@ -105,7 +113,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(config.ws_url.as_str(), "wss://api.tchat.ortisec.site/ws");
+        assert_eq!(config.ws_url.as_str(), "wss://ws.tchat.ortisec.site/ws");
     }
 
     #[test]

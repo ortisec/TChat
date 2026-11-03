@@ -31,13 +31,17 @@ cargo run -p tchat-cli
 
 ## Configuración
 
-| Variable            | Por defecto             | Uso                |
-| ------------------- | ----------------------- | ------------------ |
-| `TCHAT_API_URL`     | `http://localhost:8000` | API REST           |
-| `TCHAT_WS_URL`      | derivada de la API      | WebSocket (`…/ws`) |
-| `TCHAT_ACCOUNT_URL` | `http://localhost:4322` | Web de cuentas     |
+El binario publicado apunta por defecto a producción:
 
-También se pueden pasar como `--api-url`, `--ws-url` y `--account-url`.
+| Variable            | Por defecto                      | Uso            |
+| ------------------- | -------------------------------- | -------------- |
+| `TCHAT_API_URL`     | `https://api.tchat.ortisec.site` | API REST       |
+| `TCHAT_WS_URL`      | `wss://ws.tchat.ortisec.site/ws` | WebSocket      |
+| `TCHAT_ACCOUNT_URL` | `https://app.tchat.ortisec.site` | Web de cuentas |
+
+También se pueden pasar como `--api-url`, `--ws-url` y `--account-url`. Para desarrollo local
+(`just cli`) el `justfile` fuerza `http://localhost:8000` y `http://localhost:4322`; el WebSocket
+se deriva de la API (`ws://localhost:8000/ws`).
 
 ## Sesión y tokens
 
