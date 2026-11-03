@@ -25,6 +25,7 @@ pub enum KeyOutcome {
     RejectFriend(Uuid),
     CancelFriend(Uuid),
     RemoveFriend(Uuid),
+    OpenChat(Uuid),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -122,6 +123,17 @@ impl App {
             .unwrap_or(0);
         if self.selected >= self.conversations.len() {
             self.selected = self.conversations.len().saturating_sub(1);
+        }
+    }
+
+    pub fn select_conversation(&mut self, conversation_id: Uuid) {
+        if let Some(index) = self
+            .conversations
+            .iter()
+            .position(|conv| conv.id == conversation_id)
+        {
+            self.selected = index;
+            self.scroll = 0;
         }
     }
 
@@ -372,6 +384,7 @@ impl App {
                 KeyOutcome::None
             }
             KeyCode::Enter => match self.selected_entry() {
+                Some(FriendEntry::Friend(user)) => KeyOutcome::OpenChat(user.id),
                 Some(FriendEntry::Incoming(friendship)) => KeyOutcome::AcceptFriend(friendship.id),
                 Some(FriendEntry::Outgoing(friendship)) => KeyOutcome::CancelFriend(friendship.id),
                 _ => KeyOutcome::None,
@@ -720,7 +733,31 @@ mod tests {
             app.handle_key(key(KeyCode::Char('x'))),
             KeyOutcome::RemoveFriend(amiga_id)
         );
-        // Enter sobre un amigo no elimina.
-        assert_eq!(app.handle_key(key(KeyCode::Enter)), KeyOutcome::None);
+        // Enter sobre un amigo abre el chat (no elimina).
+        assert_eq!(
+            app.handle_key(key(KeyCode::Enter)),
+            KeyOutcome::OpenChat(amiga_id)
+        );
+    }
+
+    #[test]
+    fn enter_sobre_amigo_abre_chat() {
+        let me = Uuid::new_v4();
+        let mut app = App::new(user(me, "yo"), vec![]);
+        let amiga = user(Uuid::new_v4(), "ana");
+        let amiga_id = amiga.id;
+        app.set_friends(
+            vec![amiga],
+            FriendRequests {
+                incoming: vec![],
+                outgoing: vec![],
+            },
+        );
+        app.handle_key(key(KeyCode::Tab));
+
+        assert_eq!(
+            app.handle_key(key(KeyCode::Enter)),
+            KeyOutcome::OpenChat(amiga_id)
+        );
     }
 }

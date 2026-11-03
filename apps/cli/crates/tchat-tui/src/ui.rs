@@ -213,7 +213,7 @@ fn draw_friends_detail(frame: &mut Frame, app: &App, area: Rect) {
             ]));
             lines.push(Line::from(""));
             lines.push(Line::styled(
-                "Pulsa x para quitar a este amigo de la lista.",
+                "Enter abre el chat · x quita al amigo",
                 Style::default().fg(Color::Gray),
             ));
         }

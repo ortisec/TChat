@@ -14,7 +14,7 @@ use tokio::time::Instant;
 use tokio_tungstenite::tungstenite::Message;
 use uuid::Uuid;
 
-use crate::app::{App, Effect, KeyOutcome};
+use crate::app::{App, Effect, KeyOutcome, Tab};
 
 enum UiEvent {
     Ws { generation: u64, event: Incoming },
@@ -102,6 +102,9 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
                     }
                     KeyOutcome::RemoveFriend(user_id) => {
                         remove_friend(&client, &mut app, user_id).await;
+                    }
+                    KeyOutcome::OpenChat(user_id) => {
+                        open_chat(&client, &mut app, user_id).await;
                     }
                     KeyOutcome::None => {}
                 }
@@ -357,5 +360,27 @@ async fn remove_friend(client: &Client, app: &mut App, user_id: Uuid) {
         }
         Err(Error::Api { message, .. }) => app.set_status(format!("no se pudo quitar: {message}")),
         Err(error) => app.set_status(format!("no se pudo quitar: {error}")),
+    }
+}
+
+async fn open_chat(client: &Client, app: &mut App, user_id: Uuid) {
+    match client.open_direct(user_id).await {
+        Ok(conversation) => {
+            let conversation_id = conversation.id;
+            match client.conversations().await {
+                Ok(conversations) => {
+                    app.set_conversations(conversations);
+                    app.select_conversation(conversation_id);
+                    app.tab = Tab::Chats;
+                }
+                Err(error) => app.set_status(format!("no se pudo recargar: {error}")),
+            }
+            load_messages(client, app, conversation_id).await;
+            app.set_status("conversación abierta");
+        }
+        Err(Error::Api { message, .. }) if message == "not_friends" => {
+            app.set_status("no sois amigos; enviad una solicitud primero");
+        }
+        Err(error) => app.set_status(format!("no se pudo abrir el chat: {error}")),
     }
 }
