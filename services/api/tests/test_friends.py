@@ -177,6 +177,49 @@ async def test_accept_notifies_requester(client: AsyncClient, act_as) -> None:
     finally:
         await manager.disconnect(uuid.UUID(ana["id"]), socket)  # type: ignore[arg-type]
 
-    assert len(socket.messages) == 1
+    assert len(socket.messages) == 2
     assert '"friend.request.accepted"' in socket.messages[0]
     assert '"username": "bruno"' in socket.messages[0]
+    assert '"conversation.new"' in socket.messages[1]
+
+
+async def test_accept_creates_direct_conversation(client: AsyncClient, act_as) -> None:
+    ana, bruno = await befriend(client, act_as, "ana", "Ana", "bruno", "Bruno")
+
+    act_as("ana")
+    ana_conversations = await client.get("/api/v1/conversations")
+    assert ana_conversations.status_code == 200
+    body = ana_conversations.json()
+    assert len(body) == 1
+    assert body[0]["type"] == "direct"
+    assert {member["id"] for member in body[0]["members"]} == {ana["id"], bruno["id"]}
+
+    act_as("bruno")
+    bruno_conversations = await client.get("/api/v1/conversations")
+    assert bruno_conversations.status_code == 200
+    body = bruno_conversations.json()
+    assert len(body) == 1
+    assert {member["id"] for member in body[0]["members"]} == {ana["id"], bruno["id"]}
+
+
+async def test_accept_emits_conversation_new_to_both(client: AsyncClient, act_as) -> None:
+    ana = await register(client, act_as, "ana", name="Ana")
+    bruno = await register(client, act_as, "bruno", name="Bruno")
+
+    act_as("ana")
+    sent = await client.post("/api/v1/friends/requests", json={"username": "bruno"})
+    friendship_id = sent.json()["id"]
+
+    ana_socket = FakeSocket()
+    bruno_socket = FakeSocket()
+    await manager.connect(uuid.UUID(ana["id"]), ana_socket)  # type: ignore[arg-type]
+    await manager.connect(uuid.UUID(bruno["id"]), bruno_socket)  # type: ignore[arg-type]
+    try:
+        act_as("bruno")
+        await client.post(f"/api/v1/friends/requests/{friendship_id}/accept")
+    finally:
+        await manager.disconnect(uuid.UUID(ana["id"]), ana_socket)  # type: ignore[arg-type]
+        await manager.disconnect(uuid.UUID(bruno["id"]), bruno_socket)  # type: ignore[arg-type]
+
+    assert any('"conversation.new"' in message for message in ana_socket.messages)
+    assert any('"conversation.new"' in message for message in bruno_socket.messages)

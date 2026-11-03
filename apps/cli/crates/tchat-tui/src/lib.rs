@@ -142,6 +142,7 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
                                 app.connected = true;
                                 last_ping = Instant::now();
                                 app.set_status("conectado");
+                                refresh_after_reconnect(&client, &mut app).await;
                             }
                             Err(error) => {
                                 app.set_status(format!("sin conexión: {error}"));
@@ -171,6 +172,7 @@ pub async fn run(client: Client, me: User, conversations: Vec<Conversation>) -> 
                             app.connected = true;
                             last_ping = Instant::now();
                             app.set_status("conectado");
+                            refresh_after_reconnect(&client, &mut app).await;
                         }
                         Err(error) => {
                             app.set_status(format!("sin conexión: {error}"));
@@ -277,6 +279,16 @@ async fn load_friends(client: &Client, app: &mut App) {
 
 async fn reload_friends(client: &Client, app: &mut App) {
     load_friends(client, app).await;
+}
+
+/// Al reconectar el WebSocket refrescamos amigos y conversaciones para no perder
+/// ningún evento ocurrido mientras estábamos desconectados.
+async fn refresh_after_reconnect(client: &Client, app: &mut App) {
+    reload_friends(client, app).await;
+    match client.conversations().await {
+        Ok(conversations) => app.set_conversations(conversations),
+        Err(error) => app.set_status(format!("no se pudo recargar: {error}")),
+    }
 }
 
 fn friend_error(code: &str, username: &str) -> String {

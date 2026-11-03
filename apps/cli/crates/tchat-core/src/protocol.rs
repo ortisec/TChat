@@ -105,6 +105,9 @@ pub enum Decoded {
     FriendRemoved {
         user_id: Uuid,
     },
+    ConversationNew {
+        conversation_id: Uuid,
+    },
     Error {
         code: String,
         message: String,
@@ -145,6 +148,11 @@ struct FriendRequestPayload {
 #[derive(Deserialize)]
 struct UserIdPayload {
     user_id: Uuid,
+}
+
+#[derive(Deserialize)]
+struct ConversationNewPayload {
+    conversation_id: Uuid,
 }
 
 impl Incoming {
@@ -204,6 +212,13 @@ impl Incoming {
                     user_id: payload.user_id,
                 })
                 .unwrap_or(Decoded::Unknown),
+            "conversation.new" => {
+                serde_json::from_value::<ConversationNewPayload>(self.payload.clone())
+                    .map(|payload| Decoded::ConversationNew {
+                        conversation_id: payload.conversation_id,
+                    })
+                    .unwrap_or(Decoded::Unknown)
+            }
             "error" => serde_json::from_value::<ErrorPayload>(self.payload.clone())
                 .map(|payload| Decoded::Error {
                     code: payload.code,
@@ -283,6 +298,24 @@ mod tests {
             Decoded::Error { code, message } => {
                 assert_eq!(code, "empty_message");
                 assert_eq!(message, "vacío");
+            }
+            other => panic!("evento inesperado: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn decodifica_conversation_new() {
+        let event = Incoming::parse(
+            r#"{"type":"conversation.new","payload":{"conversation_id":"0192f0c4-8f3a-7c2e-9c1b-1f4f2a7d3e55"}}"#,
+        )
+        .unwrap();
+
+        match event.decoded() {
+            Decoded::ConversationNew { conversation_id } => {
+                assert_eq!(
+                    conversation_id.to_string(),
+                    "0192f0c4-8f3a-7c2e-9c1b-1f4f2a7d3e55"
+                );
             }
             other => panic!("evento inesperado: {other:?}"),
         }

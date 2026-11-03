@@ -19,6 +19,7 @@ from tchat_api.schemas.friends import (
     FriendshipPublic,
 )
 from tchat_api.schemas.users import UserPublic
+from tchat_api.services import conversations as conversations_service
 from tchat_api.services import friends as friends_service
 from tchat_api.services import users as users_service
 
@@ -94,10 +95,19 @@ async def accept_request(
     friendship = await friends_service.respond(session, user, friendship_id, accept=True)
     counterpart = await users_service.get_by_id(session, friendship.requester_id)
 
+    # Al aceptar se abre (o recupera) la conversación directa entre los dos nuevos amigos.
+    conversation = await conversations_service.create_direct(session, user, counterpart.id)
+
+    # Avisa al remitente de que su solicitud fue aceptada.
     await manager.send_to_user(
         counterpart.id,
         envelope("friend.request.accepted", _request_payload(friendship, user)),
     )
+    # Avisa a ambos de que ya disponen de una conversación, para que la vean en tiempo real.
+    conversation_payload = {"conversation_id": str(conversation.id)}
+    await manager.send_to_user(counterpart.id, envelope("conversation.new", conversation_payload))
+    await manager.send_to_user(user.id, envelope("conversation.new", conversation_payload))
+
     return friendship_public(friendship, counterpart)
 
 

@@ -284,6 +284,7 @@ impl App {
                 self.set_notification(format!("@{who} te eliminó de su lista de amigos"));
                 Effect::ReloadFriends
             }
+            Decoded::ConversationNew { .. } => Effect::ReloadConversations,
             Decoded::Error { code, message } => {
                 if message.is_empty() {
                     self.status = format!("error: {code}");
@@ -585,6 +586,17 @@ mod tests {
         let mut app = App::new(user(me, "yo"), vec![only]);
 
         let effect = app.apply(message_event(Uuid::new_v4(), "hola"));
+
+        assert_eq!(effect, Effect::ReloadConversations);
+    }
+
+    #[test]
+    fn conversacion_nueva_pide_recargar() {
+        let me = Uuid::new_v4();
+        let mut app = App::new(user(me, "yo"), vec![]);
+
+        let raw = r#"{"type":"conversation.new","payload":{"conversation_id":"0192f0c4-8f3a-7c2e-9c1b-1f4f2a7d3e55"}}"#;
+        let effect = app.apply(Incoming::parse(raw).unwrap());
 
         assert_eq!(effect, Effect::ReloadConversations);
     }
