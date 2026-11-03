@@ -1823,7 +1823,7 @@ dependencies = [
 
 [[package]]
 name = "tchat-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -1835,7 +1835,7 @@ dependencies = [
 
 [[package]]
 name = "tchat-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "chrono",
  "futures-util",
@@ -1852,7 +1852,7 @@ dependencies = [
 
 [[package]]
 name = "tchat-tui"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "chrono",
